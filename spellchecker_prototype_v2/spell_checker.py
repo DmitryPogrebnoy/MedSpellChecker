@@ -5,26 +5,27 @@ import stringdist  # python -m pip install stringdist
 from scipy.special import softmax
 from gensim.models import FastText
 
-
 import pandas as pd
 import numpy as np
 
 from tqdm import tqdm
 import re
+import os
 
 class SpellChecker:
 
     def __init__(self):
-        self.total_word_dict = pickle.load(open(r'spell_checker/data/total_word_dict.pickle', 'rb'))
+        print(os.path.dirname(__file__))
+        self.total_word_dict = pickle.load(open('../data/spellchecker_prototype_v2/total_word_dict.pickle', 'rb'))
         # self.tomsk_no_stop = pickle.load(open(r'spell_checker/data/tomsk_no_stop.pickle', 'rb'))
 
         # self.total_word_dict = self.total_word_dict1 + self.tomsk_no_stop
-        self.wordcount = pickle.load(open(r'spell_checker/data/wordcount.pickle', 'rb'))
+        self.wordcount = pickle.load(open('../data/spellchecker_prototype_v2/wordcount.pickle', 'rb'))
 
-        self.model = FastText.load(r'spell_checker/models/cbow_model_tmsk_all.model', mmap='r')
+        # self.model = FastText.load(r'spell_checker/models/cbow_model_tmsk_all.model', mmap='r')
         # self.model = FastText.load(r'spell_checker/models/cbow_model_tmsk_3.model', mmap='r')
-        # self.model = FastText.load(r'spell_checker/models/cbow_model_new.model', mmap='r')
-        self.exp = pickle.load(open(r'spell_checker/data/exp.pickle', 'rb'))
+        self.model = FastText.load('../data/spellchecker_prototype_v2/models/cbow_model_new.model', mmap='r')
+        # self.exp = pickle.load(open(r'spell_checker/data/exp.pickle', 'rb'))
 
     def normalize_word(self, word):
         morph = pymorphy2.MorphAnalyzer()
@@ -32,7 +33,8 @@ class SpellChecker:
         return morph.parse(word)[0].normal_form
 
     def check_for_correction(self, word):
-        if (word in self.total_word_dict) or (word in self.exp):
+        # if (word in self.total_word_dict) or (word in self.exp):
+        if (word in self.total_word_dict):
             return word
         else:
             return False
@@ -205,4 +207,5 @@ class SpellChecker:
         # print("Corrected words:" + str(list(uncorrect_words)))
         # print()
         # return ' '.join(correct_words)
-        return list(uncorrect_words), list(correction_word), list(correct_words)
+        # return list(uncorrect_words), list(correction_word), list(correct_words)
+        return list(correct_words)
