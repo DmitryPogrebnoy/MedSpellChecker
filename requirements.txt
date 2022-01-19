@@ -5,4 +5,5 @@ numpy~=1.21.4
 scipy~=1.7.3
 gensim~=4.1.2
 tqdm~=4.62.3
+mosestokenizer~=1.2.1
 nltk~=3.6.7
