@@ -1,10 +1,10 @@
 from abc import ABC, abstractmethod
-from enum import Enum
+from enum import IntEnum
 
 from editdistpy import damerau_osa, levenshtein
 
 
-class EditDistanceAlgo(Enum):
+class EditDistanceAlgo(IntEnum):
     """Supported edit distance algorithms."""
 
     LEVENSHTEIN_FAST = 0  #: Fast Levenshtein algorithm.
@@ -30,7 +30,7 @@ class EditDistance:
 
     def __init__(self, algorithm: EditDistanceAlgo) -> None:
         self._distance_comparer: AbstractDistanceComparer
-        self._algorithm = algorithm
+        self.algorithm = algorithm
         if algorithm == EditDistanceAlgo.LEVENSHTEIN_FAST:
             self._distance_comparer = LevenshteinFast()
         elif algorithm == EditDistanceAlgo.DAMERAU_OSA_FAST:

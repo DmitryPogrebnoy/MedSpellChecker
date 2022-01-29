@@ -1,3 +1,4 @@
+import json
 import logging
 from collections import defaultdict
 from dataclasses import dataclass
@@ -37,6 +38,21 @@ class Word:
 
 @final
 @dataclass
+class WordWindow:
+    """Internal representation of window for candidate ranking.
+
+       Args:
+           center_word: word for correction
+           left_words: words on the left side (maybe empty for first word in text)
+           right_words: words on the right side (maybe empty for last word in text)
+   """
+    center_word: Word
+    left_words: List[Word]
+    right_words: List[Word]
+
+
+@final
+@dataclass
 class CandidateWord:
     """Spelling suggestion.
 
@@ -57,25 +73,65 @@ class NewPerfectSpellchecker:
 
     # TODO: Need ability to init spellchecker from saved state
     def __init__(self,
-                 words_list: Union[Path, str, IO[str], List[str]],
+                 words_list: Optional[Union[Path, str, IO[str], List[str]]] = None,
                  encoding: Optional[str] = None,
                  edit_distance_algo: EditDistanceAlgo = EditDistanceAlgo.DAMERAU_OSA_FAST,
-                 max_dictionary_edit_distance: int = 2):
-        self._edit_distance_comparer: EditDistance = EditDistance(edit_distance_algo)
-        self._max_dictionary_edit_distance: Final[int] = max_dictionary_edit_distance
+                 max_dictionary_edit_distance: int = 2,
+                 saved_state: Optional[Union[Path, str, IO[str]]] = None):
+        self._version = 1
 
-        self._max_dictionary_word_length: int = 0
-        self._words_dictionary: Set[str] = set()
-        self._deletes_word_dictionary: Dict[str, List[str]] = defaultdict(list)
-        # Fill words_dictionary and build deletes_word_dictionary
-        self._create_dictionary_from_words(words_list, encoding)
+        if saved_state is not None:
+            self._load_sate(saved_state)
+        else:
+            self._edit_distance_comparer: EditDistance = EditDistance(edit_distance_algo)
+            self._max_dictionary_edit_distance: Final[int] = max_dictionary_edit_distance
+
+            self._max_dictionary_word_length: int = 0
+            self._words_dictionary: Set[str] = set()
+            self._deletes_word_dictionary: Dict[str, List[str]] = defaultdict(list)
+            # Fill _words_dictionary and build _deletes_word_dictionary
+            if words_list is None:
+                raise ValueError(f"word_list and saved_state cannot be None at the same time. Pass one of these "
+                                 f"arguments!")
+            self._create_dictionary_from_words(words_list, encoding)
 
         self._tokenizer: Final[MosesTokenizer] = MosesTokenizer(lang="ru")
         self._lemmatizer: Final[MorphAnalyzer] = MorphAnalyzer()
-
         # Download nltk stopwords dict
         download(NewPerfectSpellchecker._stopwords_download_name)
         self._stopwords: Final[List[str]] = stopwords.words('russian')
+
+    def _load_sate(self, saved_state: Union[Path, str, IO[str]]):
+        if isinstance(saved_state, (Path, str)):
+            state_path = Path(saved_state)
+            if not state_path.exists():
+                raise ValueError(f"State not found at {state_path}.")
+            with open(state_path, "r") as infile:
+                data = json.load(infile)
+        else:
+            data = json.load(saved_state)
+
+        if data["_version"] != self._version:
+            raise ValueError(f"Incompatible version of loaded state! Loaded version is {data['_version']}, but "
+                             f"spellchecker version is {self._version}")
+
+        self._edit_distance_comparer = EditDistance(data["_edit_distance_algo"])
+        self._max_dictionary_edit_distance = data["_max_dictionary_edit_distance"]
+        self._max_dictionary_word_length = data["_max_dictionary_word_length"]
+        self._words_dictionary = set(data["_words_dictionary"])
+        self._deletes_word_dictionary = data["_deletes_word_dictionary"]
+
+    def save_state(self, path: Union[Path, str]):
+        data = {
+            "_version": self._version,
+            "_edit_distance_algo": self._edit_distance_comparer.algorithm,
+            "_max_dictionary_edit_distance": self._max_dictionary_edit_distance,
+            "_max_dictionary_word_length": self._max_dictionary_word_length,
+            "_words_dictionary": list(self._words_dictionary),
+            "_deletes_word_dictionary": self._deletes_word_dictionary
+        }
+        with open(Path(path), "w") as file:
+            file.write(json.dumps(data))
 
     def _create_dictionary_from_words(
             self,
@@ -352,6 +408,7 @@ class NewPerfectSpellchecker:
         valid_words: List[Word] = [word for word in words if word.should_correct]
         invalid_words: List[Word] = [word for word in words if not word.should_correct]
 
+        # TODO: Need to implement the window words for ranking candidates
         for valid_word in valid_words:
             # Generate list of candidates for fix
             candidates_list: List[CandidateWord] = self._generate_fixing_candidates(valid_word)
