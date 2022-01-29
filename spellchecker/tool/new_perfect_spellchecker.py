@@ -5,13 +5,13 @@ from pathlib import Path
 from re import search
 from typing import final, Final, Generator, Set, List, Dict, Optional, Union, IO
 
-# Just for now - should be replaced with optimized C implementation
-from editdistpy import damerau_osa
 from mosestokenizer import MosesTokenizer
 from nltk import download
 from nltk.corpus import stopwords
 from pymorphy2 import MorphAnalyzer
 from pymorphy2.analyzer import Parse
+
+from editdistance import EditDistanceAlgo, EditDistance
 
 logger = logging.getLogger(__name__)
 
@@ -59,7 +59,9 @@ class NewPerfectSpellchecker:
     def __init__(self,
                  words_list: Union[Path, str, IO[str], List[str]],
                  encoding: Optional[str] = None,
+                 edit_distance_algo: EditDistanceAlgo = EditDistanceAlgo.DAMERAU_OSA_FAST,
                  max_dictionary_edit_distance: int = 2):
+        self._edit_distance_comparer: EditDistance = EditDistance(edit_distance_algo)
         self._max_dictionary_edit_distance: Final[int] = max_dictionary_edit_distance
 
         self._max_dictionary_word_length: int = 0
@@ -79,11 +81,11 @@ class NewPerfectSpellchecker:
             self,
             words_list: Union[Path, str, IO[str], List[str]],
             encoding: Optional[str] = None) -> bool:
-        """Loads dictionary words from a file containing plain text.
+        """Create dictionary words from a file containing words. One word per line.
 
         Args:
-            corpus: The path+filename of the file or afile object of the
-                dictionary.
+            words_list: The path+filename of the file or afile object of the
+                word-list or list of strings.
             encoding: Text encoding of the corpus file.
 
         Returns:
@@ -115,7 +117,7 @@ class NewPerfectSpellchecker:
             key: The word to add to dictionary.
 
         Returns:
-            ``True`` if the word was added as a new correctly spelled word, or
+            None
         """
         # TODO: Should we lemmatise words in order to glue together several different forms
         #  of the same word and thereby reduce the size of the dictionary?
@@ -137,6 +139,12 @@ class NewPerfectSpellchecker:
         return
 
     def _is_invalid_token(self, token: str) -> bool:
+        """Checks if the correction token is valid.
+
+        The token must not contain punctuation marks or other symbols,
+        otherwise we cannot fix it correctly. And also all the letters together in the token are not capitalized -
+        this is to exclude the correction of various abbreviations that are written with capital letters.
+        """
         return (not search("[^а-яА-Я]", token)) & (not token.isupper()) & (
             not token in self._stopwords)
 
@@ -222,9 +230,6 @@ class NewPerfectSpellchecker:
         candidate_pointer: int = 0
         candidates: List[str] = [original_word]
 
-        # TODO: Add different algo for compute edit distance
-        # distance_comparer = EditDistance(self._distance_algorithm)
-
         while candidate_pointer < len(candidates):
             candidate = candidates[candidate_pointer]
             candidate_pointer += 1
@@ -305,8 +310,7 @@ class NewPerfectSpellchecker:
                         if suggestion in considered_candidates:
                             continue
                         considered_candidates.add(suggestion)
-                        # TODO: Add different algo for compute edit distance
-                        distance = damerau_osa.distance(
+                        distance = self._edit_distance_comparer.compare(
                             original_word, suggestion, max_edit_distance
                         )
                         if distance < 0:
