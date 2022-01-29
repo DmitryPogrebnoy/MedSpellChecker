@@ -116,6 +116,7 @@ class NewPerfectSpellchecker:
                              f"spellchecker version is {self._version}")
 
         self._edit_distance_comparer = EditDistance(data["_edit_distance_algo"])
+        # noinspection PyFinal
         self._max_dictionary_edit_distance = data["_max_dictionary_edit_distance"]
         self._max_dictionary_word_length = data["_max_dictionary_word_length"]
         self._words_dictionary = set(data["_words_dictionary"])
