@@ -4,6 +4,7 @@ from pathlib import Path
 from typing import final, List, Optional, Union, IO
 
 from candidate_generator import CandidateGenerator
+from candidate_ranker import CandidateRanker, CandidateRankerType
 from candidate_word import CandidateWord
 from edit_distance import EditDistanceAlgo
 from pre_post_processor import PrePostProcessor
@@ -19,6 +20,7 @@ class MedSpellchecker:
                  encoding: Optional[str] = None,
                  edit_distance_algo: EditDistanceAlgo = EditDistanceAlgo.DAMERAU_OSA_FAST,
                  max_dictionary_edit_distance: int = 2,
+                 candidate_ranker_type: CandidateRankerType = CandidateRankerType.RU_ROBERTA_LARGE_CANDIDATE_RANKER,
                  saved_state_folder: Optional[Union[Path, str]] = None):
         self._version = 1
         self._pre_pos_processor: PrePostProcessor = PrePostProcessor()
@@ -30,15 +32,11 @@ class MedSpellchecker:
                                                            encoding,
                                                            edit_distance_algo,
                                                            max_dictionary_edit_distance)
+            self._candidate_ranker = CandidateRanker(candidate_ranker_type)
 
     def save_state(self, path: Union[Path, str]):
         os.makedirs(os.path.dirname(path), exist_ok=True)
         self._candidate_generator.save_state(path)
-
-    # TODO: Implement ranking candidates
-    def _find_most_suitable_candidate(self, candidates: List[CandidateWord]) -> CandidateWord:
-        # Some work
-        return candidates[0]
 
     # TODO: Do I need to save the formatting after fixing? -- no for now,
     #  usually formatting is not necessary for ml tasks
@@ -57,10 +55,10 @@ class MedSpellchecker:
             # Generate list of candidates for fix
             candidates_list: List[CandidateWord] = self._candidate_generator.generate_fixing_candidates(valid_word)
             # Pick most suitable candidate as fixed word
-            most_suitable_candidate: CandidateWord = self._find_most_suitable_candidate(candidates_list)
+            ranked_candidates: List[CandidateWord] = self._candidate_ranker.rank_candidates(candidates_list)
             # TODO: Need to restore original case and word form from tags -- no for now,
             #  lemmatization is common activity for preprocessing
-            valid_word.corrected_value = most_suitable_candidate.value
+            valid_word.corrected_value = ranked_candidates[0].value
 
         corrected_text = ' '.join(map(lambda word: word.corrected_value, words))
         return corrected_text
