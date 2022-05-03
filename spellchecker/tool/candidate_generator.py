@@ -1,87 +1,31 @@
 import json
 import logging
+import os
 from collections import defaultdict
-from dataclasses import dataclass
 from pathlib import Path
-from re import search
-from typing import final, Final, Generator, Set, List, Dict, Optional, Union, IO
+from typing import final, Optional, IO, List, Union, Final, Set, Dict
 
-from mosestokenizer import MosesTokenizer
-from nltk import download
-from nltk.corpus import stopwords
-from pymorphy2 import MorphAnalyzer
-from pymorphy2.analyzer import Parse
-
-from editdistance import EditDistanceAlgo, EditDistance
+from candidate_word import CandidateWord
+from edit_distance import EditDistanceAlgo, EditDistance
+from word import Word
 
 logger = logging.getLogger(__name__)
 
 
 @final
-@dataclass
-class Word:
-    """Input word representation.
+class CandidateGenerator:
+    _saved_state_file_candidate_generator = "candidate_generator_state.json"
 
-        Args:
-            source_value: The original word.
-            should_correct: Should this word be corrected?
-            lemma_normal_form: The normal form of the word
-            lemma_tag: Tag line of the original word form
-            corrected_value: Final corrected word
-    """
-    original_value: str
-    should_correct: bool
-    lemma_normal_form: Optional[str] = None
-    lemma_tag: Optional[str] = None
-    corrected_value: Optional[str] = None
-
-
-@final
-@dataclass
-class WordWindow:
-    """Internal representation of window for candidate ranking.
-
-       Args:
-           center_word: word for correction
-           left_words: words on the left side (maybe empty for first word in text)
-           right_words: words on the right side (maybe empty for last word in text)
-   """
-    center_word: Word
-    left_words: List[Word]
-    right_words: List[Word]
-
-
-@final
-@dataclass
-class CandidateWord:
-    """Spelling suggestion.
-
-        Args:
-            value: The suggested word.
-            distance: Edit distance from search word.
-    """
-
-    value: str
-    distance: int
-    # TODO: Add more features for ranking if needed
-
-
-@final
-class NewPerfectSpellchecker:
-    # TODO: Add description
-    _stopwords_download_name: Final[str] = "stopwords"
-
-    # TODO: Need ability to init spellchecker from saved state
     def __init__(self,
                  words_list: Optional[Union[Path, str, IO[str], List[str]]] = None,
                  encoding: Optional[str] = None,
                  edit_distance_algo: EditDistanceAlgo = EditDistanceAlgo.DAMERAU_OSA_FAST,
                  max_dictionary_edit_distance: int = 2,
-                 saved_state: Optional[Union[Path, str, IO[str]]] = None):
+                 saved_state_folder: Optional[Union[Path, str]] = None):
         self._version = 1
 
-        if saved_state is not None:
-            self._load_sate(saved_state)
+        if saved_state_folder is not None:
+            self._load_sate(saved_state_folder)
         else:
             self._edit_distance_comparer: EditDistance = EditDistance(edit_distance_algo)
             self._max_dictionary_edit_distance: Final[int] = max_dictionary_edit_distance
@@ -95,21 +39,14 @@ class NewPerfectSpellchecker:
                                  f"arguments!")
             self._create_dictionary_from_words(words_list, encoding)
 
-        self._tokenizer: Final[MosesTokenizer] = MosesTokenizer(lang="ru")
-        self._lemmatizer: Final[MorphAnalyzer] = MorphAnalyzer()
-        # Download nltk stopwords dict
-        download(NewPerfectSpellchecker._stopwords_download_name)
-        self._stopwords: Final[List[str]] = stopwords.words('russian')
+    def _load_sate(self, saved_state_folder: Union[Path, str]):
+        saved_state_file = os.path.join(saved_state_folder, CandidateGenerator._saved_state_file_candidate_generator)
 
-    def _load_sate(self, saved_state: Union[Path, str, IO[str]]):
-        if isinstance(saved_state, (Path, str)):
-            state_path = Path(saved_state)
-            if not state_path.exists():
-                raise ValueError(f"State not found at {state_path}.")
-            with open(state_path, "r") as infile:
-                data = json.load(infile)
-        else:
-            data = json.load(saved_state)
+        state_path = Path(saved_state_file)
+        if not state_path.exists():
+            raise ValueError(f"Load CandidateGenerator state not found at {state_path}.")
+        with open(state_path, "r") as infile:
+            data = json.load(infile)
 
         if data["_version"] != self._version:
             raise ValueError(f"Incompatible version of loaded state! Loaded version is {data['_version']}, but "
@@ -131,7 +68,8 @@ class NewPerfectSpellchecker:
             "_words_dictionary": list(self._words_dictionary),
             "_deletes_word_dictionary": self._deletes_word_dictionary
         }
-        with open(Path(path), "w") as file:
+        os.makedirs(os.path.dirname(path), exist_ok=True)
+        with open(Path(os.path.join(path, CandidateGenerator._saved_state_file_candidate_generator)), "w") as file:
             file.write(json.dumps(data))
 
     def _create_dictionary_from_words(
@@ -195,27 +133,6 @@ class NewPerfectSpellchecker:
                 self._deletes_word_dictionary[delete].append(key)
         return
 
-    def _is_invalid_token(self, token: str) -> bool:
-        """Checks if the correction token is valid.
-
-        The token must not contain punctuation marks or other symbols,
-        otherwise we cannot fix it correctly. And also all the letters together in the token are not capitalized -
-        this is to exclude the correction of various abbreviations that are written with capital letters.
-        """
-        return (not search("[^а-яА-Я]", token)) & (not token.isupper()) & (
-            not token in self._stopwords)
-
-    def _generate_words_from_tokens(self, tokens: List[str]) -> Generator[Word, None, None]:
-        for token in tokens:
-            is_valid = self._is_invalid_token(token)
-            if is_valid:
-                # if the token is valid for correction, extract a lemma from it
-                parse: Parse = self._lemmatizer.parse(token)[0]
-                yield Word(token, is_valid, parse.normal_form, parse.tag)
-            else:
-                # else just set corrected_value as original token
-                yield Word(token, is_valid, corrected_value=token)
-
     def _recursive_generate_delete_words(
             self,
             word: str,
@@ -245,8 +162,7 @@ class NewPerfectSpellchecker:
             hash_set.add("")
         return self._recursive_generate_delete_words(word, 0, hash_set)
 
-    # TODO: Test this implementation
-    def _generate_fixing_candidates(
+    def generate_fixing_candidates(
             self,
             word: Word,
             max_edit_distance: Optional[int] = None,
@@ -391,32 +307,3 @@ class NewPerfectSpellchecker:
 
         early_return()
         return suggestions
-
-    # TODO: Implement ranking candidates
-    def _find_most_suitable_candidate(self, candidates: List[CandidateWord]) -> CandidateWord:
-        # Some work
-        return candidates[0]
-
-    # TODO: Do I need to save the formatting after fixing?
-    def fix_text(self, text: str) -> str:
-        # Remove newlines as the MosesTokenizer fails on newlines.
-        # So if we decide to keep original text formatting then it should be reworked.
-        text_without_newline: str = text.replace("\n", " ")
-        # Tokenize text
-        tokens: List[str] = self._tokenizer(text_without_newline)
-        # Build internal representation of words
-        words: List[Word] = [word for word in self._generate_words_from_tokens(tokens)]
-        valid_words: List[Word] = [word for word in words if word.should_correct]
-        invalid_words: List[Word] = [word for word in words if not word.should_correct]
-
-        # TODO: Need to implement the window words for ranking candidates
-        for valid_word in valid_words:
-            # Generate list of candidates for fix
-            candidates_list: List[CandidateWord] = self._generate_fixing_candidates(valid_word)
-            # Pick most suitable candidate as fixed word
-            most_suitable_candidate: CandidateWord = self._find_most_suitable_candidate(candidates_list)
-            # TODO: Need to restore original case and word form from tags
-            valid_word.corrected_value = most_suitable_candidate.value
-
-        corrected_text = ' '.join(map(lambda word: word.corrected_value, words))
-        return corrected_text
