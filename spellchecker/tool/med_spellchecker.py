@@ -55,7 +55,8 @@ class MedSpellchecker:
             # Generate list of candidates for fix
             candidates_list: List[CandidateWord] = self._candidate_generator.generate_fixing_candidates(valid_word)
             # Pick most suitable candidate as fixed word
-            ranked_candidates: List[CandidateWord] = self._candidate_ranker.rank_candidates(candidates_list)
+            ranked_candidates: List[CandidateWord] = self._candidate_ranker.rank_candidates(
+                valid_word, valid_words, candidates_list)
             # TODO: Need to restore original case and word form from tags -- no for now,
             #  lemmatization is common activity for preprocessing
             valid_word.corrected_value = ranked_candidates[0].value
