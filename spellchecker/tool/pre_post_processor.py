@@ -33,7 +33,7 @@ class PrePostProcessor:
             not token in self._stopwords)
 
     def tokenize(self, string: str):
-        return self._tokenizer(str)
+        return self._tokenizer(string)
 
     def generate_words_from_tokens(self, tokens: List[str]) -> Generator[Word, None, None]:
         for id, token in enumerate(tokens):
