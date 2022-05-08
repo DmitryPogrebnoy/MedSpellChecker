@@ -47,7 +47,7 @@ class CandidateRanker:
 
     def pick_most_suitable_candidate(self, current_word: Word,
                                      all_correct_words: List[Word],
-                                     candidates: List[CandidateWord]) -> CandidateWord:
+                                     candidates: List[CandidateWord]) -> Optional[CandidateWord]:
         return self._candidate_ranker.pick_most_suitable_candidate(current_word, all_correct_words, candidates)
 
 
@@ -154,10 +154,11 @@ class RuRobertaCandidateRanker(AbstractCandidateRanker):
     def rank_candidates(self, current_word: Word,
                         all_correct_words: List[Word],
                         candidates: List[CandidateWord]) -> List[CandidateWord]:
-        # candidates must be ordered by edit distance
-
         if not candidates:
             return candidates
+
+        # candidates must be ordered by edit distance
+        candidates.sort(key=lambda x: x.distance)
 
         text_for_prediction = self._build_text_for_prediction(current_word, all_correct_words)
 
@@ -176,10 +177,11 @@ class RuRobertaCandidateRanker(AbstractCandidateRanker):
     def pick_most_suitable_candidate(self, current_word: Word,
                                      all_correct_words: List[Word],
                                      candidates: List[CandidateWord]) -> Optional[CandidateWord]:
-        # candidates must be ordered by edit distance
-
         if not candidates:
             return None
+
+        # candidates must be ordered by edit distance
+        candidates.sort(key=lambda x: x.distance)
 
         text_for_prediction = self._build_text_for_prediction(current_word, all_correct_words)
 

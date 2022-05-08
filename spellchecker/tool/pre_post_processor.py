@@ -1,11 +1,11 @@
 from re import search
 from typing import final, Final, List, Generator
 
-from mosestokenizer import MosesTokenizer
 from nltk import download
 from nltk.corpus import stopwords
 from pymorphy2 import MorphAnalyzer
 from pymorphy2.analyzer import Parse
+from sacremoses import MosesTokenizer
 
 from word import Word
 
@@ -33,7 +33,7 @@ class PrePostProcessor:
             not token in self._stopwords)
 
     def tokenize(self, string: str):
-        return self._tokenizer(string)
+        return self._tokenizer.tokenize(string)
 
     def generate_words_from_tokens(self, tokens: List[str]) -> Generator[Word, None, None]:
         for id, token in enumerate(tokens):
