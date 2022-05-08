@@ -97,9 +97,10 @@ def _pick_correct_word_form(word: Word) -> str:
 class RuRobertaCandidateRanker(AbstractCandidateRanker):
     _pretrained_model_checkpoint = "DmitryPogrebnoy/MedRuRobertaLarge"
 
-    def __init__(self, use_gpu: bool = False):
+    def __init__(self):
         self._version = 1
-        self._use_gpu = use_gpu
+        self._use_gpu = torch.cuda.is_available() and \
+                        (torch.cuda.get_device_properties(0).total_memory / (1024 * 1024)) > 8192
 
         if self._use_gpu:
             accelerator = Accelerator(fp16=True)
