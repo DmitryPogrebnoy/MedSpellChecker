@@ -185,7 +185,8 @@ class RuRobertaCandidateRanker(AbstractCandidateRanker):
         ## Sum score of candidate word parts
         candidate_score = 0.0
         for token in candidate_token_ids:
-            candidate_score = softmax_mask_token_logits[:, token][0]
+            candidate_score += softmax_mask_token_logits[:, token][0]
+        candidate_score = candidate_score / len(candidate_token_ids)
         logger.debug(f"Candidate - {candidate_value}, score {candidate_score}")
         if self._use_treshold and candidate_score > self._treshold or not self._use_treshold:
             return candidate_score
