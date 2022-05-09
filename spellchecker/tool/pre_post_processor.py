@@ -11,7 +11,7 @@ from word import Word
 
 
 @final
-class PrePostProcessor:
+class PreProcessor:
     _stopwords_download_name: Final[str] = "stopwords"
 
     def __init__(self):
@@ -19,7 +19,7 @@ class PrePostProcessor:
         self._tokenizer: Final[MosesTokenizer] = MosesTokenizer(lang="ru")
         self._lemmatizer: Final[MorphAnalyzer] = MorphAnalyzer()
         # Download nltk stopwords dict
-        download(PrePostProcessor._stopwords_download_name)
+        download(PreProcessor._stopwords_download_name)
         self._stopwords: Final[List[str]] = stopwords.words('russian')
 
     def _is_invalid_token(self, token: str) -> bool:
@@ -34,6 +34,9 @@ class PrePostProcessor:
 
     def tokenize(self, string: str):
         return self._tokenizer.tokenize(string)
+
+    def lemmatize(self, string: str):
+        return self._lemmatizer.parse(string)[0].normal_form
 
     def generate_words_from_tokens(self, tokens: List[str]) -> Generator[Word, None, None]:
         for id, token in enumerate(tokens):

@@ -33,12 +33,21 @@ class CandidateRanker:
             ValueError: If `algorithm` specifies an invalid rank algorithm.
     """
 
-    def __init__(self, rank_method: CandidateRankerType = CandidateRankerType.RU_ROBERTA_LARGE_CANDIDATE_RANKER):
+    def __init__(self, rank_method: CandidateRankerType = CandidateRankerType.RU_ROBERTA_LARGE_CANDIDATE_RANKER,
+                 use_treshold: bool = True):
         self._algorithm = rank_method
         if rank_method == CandidateRankerType.RU_ROBERTA_LARGE_CANDIDATE_RANKER:
-            self._candidate_ranker = RuRobertaCandidateRanker()
+            self._candidate_ranker = RuRobertaCandidateRanker(use_treshold)
         else:
             raise ValueError("Unknown candidate word rank type!")
+
+    def prepare_text_for_prediction(self, current_word: Word,
+                                    all_correct_words: List[Word]) -> str:
+        return self._candidate_ranker.prepare_text_for_prediction(current_word, all_correct_words)
+
+    def predict_score(self, text_for_prediction: str,
+                      candidate_value: str) -> Optional[float]:
+        return self._candidate_ranker.predict_score(text_for_prediction, candidate_value)
 
     def rank_candidates(self, current_word: Word,
                         all_correct_words: List[Word],
@@ -47,11 +56,36 @@ class CandidateRanker:
 
     def pick_most_suitable_candidate(self, current_word: Word,
                                      all_correct_words: List[Word],
-                                     candidates: List[CandidateWord]) -> Optional[CandidateWord]:
+                                     candidates: List[CandidateWord]) -> Optional[Tuple[CandidateWord, float]]:
         return self._candidate_ranker.pick_most_suitable_candidate(current_word, all_correct_words, candidates)
 
 
 class AbstractCandidateRanker(ABC):
+    @abstractmethod
+    def prepare_text_for_prediction(self, current_word: Word,
+                                    all_correct_words: List[Word]) -> str:
+        """Returns text prepared for prediction
+
+            Args:
+                current_word: The words that need correction
+                all_correct_words: All correct words in texts
+
+            Returns:
+                Text prepared for prediction
+        """
+
+    @abstractmethod
+    def predict_score(self, text_for_prediction: str,
+                      candidate_value: str) -> Optional[float]:
+        """Returns score of candidate word
+
+            Args:
+                text_for_prediction: Text for computing score
+                candidate_value: Value for computing score
+
+            Returns:
+                Score of candidate word or None if it is under treshold
+        """
 
     @abstractmethod
     def rank_candidates(self, current_word: Word,
@@ -68,9 +102,10 @@ class AbstractCandidateRanker(ABC):
             Ranked candidates. First element is the most suitable for fixing words
         """
 
+    @abstractmethod
     def pick_most_suitable_candidate(self, current_word: Word,
                                      all_correct_words: List[Word],
-                                     candidates: List[CandidateWord]) -> CandidateWord:
+                                     candidates: List[CandidateWord]) -> Optional[Tuple[CandidateWord, float]]:
         """Returns most suitable candidate for fixing incorrect words
 
             Args:
@@ -79,7 +114,7 @@ class AbstractCandidateRanker(ABC):
                 candidates: Candidates for right word
 
             Returns:
-                Most suitable candidate
+                Most suitable candidate and it's score
         """
 
 
@@ -97,8 +132,10 @@ def _pick_correct_word_form(word: Word) -> str:
 class RuRobertaCandidateRanker(AbstractCandidateRanker):
     _pretrained_model_checkpoint = "DmitryPogrebnoy/MedRuRobertaLarge"
 
-    def __init__(self):
+    def __init__(self, use_treshold: bool = True):
         self._version = 1
+        self._use_treshold = use_treshold
+        self._treshold = 0.000001
         self._use_gpu = torch.cuda.is_available() and \
                         (torch.cuda.get_device_properties(0).total_memory / (1024 * 1024)) > 8192
 
@@ -112,15 +149,15 @@ class RuRobertaCandidateRanker(AbstractCandidateRanker):
             self._tokenizer = AutoTokenizer.from_pretrained(RuRobertaCandidateRanker._pretrained_model_checkpoint)
             self._model = AutoModelForMaskedLM.from_pretrained(RuRobertaCandidateRanker._pretrained_model_checkpoint)
 
-    def _build_text_for_prediction(self, current_word: Word,
-                                   all_correct_words: List[Word], ):
+    def prepare_text_for_prediction(self, current_word: Word,
+                                    all_correct_words: List[Word]) -> str:
         return ' '.join(map(
             lambda x: _pick_correct_word_form(
                 x) if not x.position == current_word.position else self._tokenizer.mask_token,
             all_correct_words))
 
-    def _process_candidates(self, text_for_prediction: str,
-                            candidate: CandidateWord) -> Tuple[CandidateWord, float]:
+    def predict_score(self, text_for_prediction: str,
+                      candidate_value: str) -> Optional[float]:
         inputs = self._tokenizer(text_for_prediction, return_tensors='pt')
         logger.debug(inputs)
         input_ids = inputs["input_ids"]
@@ -135,7 +172,7 @@ class RuRobertaCandidateRanker(AbstractCandidateRanker):
         mask_token_index = torch.where(inputs["input_ids"] == self._tokenizer.mask_token_id)[1]
         mask_token_logits = token_logits[0, mask_token_index, :]
         softmax_mask_token_logits = torch.softmax(mask_token_logits, dim=1)
-        candidate_token_ids = self._tokenizer.encode(candidate.value, add_special_tokens=False)
+        candidate_token_ids = self._tokenizer.encode(candidate_value, add_special_tokens=False)
         logger.debug(f"Candidate token ids: {candidate_token_ids}")
 
         if logger.getEffectiveLevel() == logging.DEBUG:
@@ -148,9 +185,20 @@ class RuRobertaCandidateRanker(AbstractCandidateRanker):
         ## Sum score of candidate word parts
         candidate_score = 0.0
         for token in candidate_token_ids:
-            candidate_score = softmax_mask_token_logits[:, token]
-        logger.debug(f"Candidate - {candidate}, score {candidate_score}")
-        return candidate, candidate_score
+            candidate_score = softmax_mask_token_logits[:, token][0]
+        logger.debug(f"Candidate - {candidate_value}, score {candidate_score}")
+        if self._use_treshold and candidate_score > self._treshold or not self._use_treshold:
+            return candidate_score
+        else:
+            return None
+
+    def _process_candidates(self, text_for_prediction: str,
+                            candidate: CandidateWord) -> Optional[Tuple[CandidateWord, float]]:
+        candidate_score = self.predict_score(text_for_prediction, candidate.value)
+        if candidate_score:
+            return candidate, candidate_score
+        else:
+            return None
 
     def rank_candidates(self, current_word: Word,
                         all_correct_words: List[Word],
@@ -161,7 +209,7 @@ class RuRobertaCandidateRanker(AbstractCandidateRanker):
         # candidates must be ordered by edit distance
         candidates.sort(key=lambda x: x.distance)
 
-        text_for_prediction = self._build_text_for_prediction(current_word, all_correct_words)
+        text_for_prediction = self.prepare_text_for_prediction(current_word, all_correct_words)
 
         logger.debug(f"Text for prediction {text_for_prediction}")
 
@@ -169,7 +217,8 @@ class RuRobertaCandidateRanker(AbstractCandidateRanker):
 
         for candidate in candidates:
             processed_candidate_score = self._process_candidates(text_for_prediction, candidate)
-            candidate_score_pairs.append(processed_candidate_score)
+            if processed_candidate_score:
+                candidate_score_pairs.append(processed_candidate_score)
 
         ranked_candidate_score_pairs = sorted(candidate_score_pairs, key=lambda x: x[1])
         ranked_candidates = map(lambda x: x[0], ranked_candidate_score_pairs)
@@ -177,14 +226,14 @@ class RuRobertaCandidateRanker(AbstractCandidateRanker):
 
     def pick_most_suitable_candidate(self, current_word: Word,
                                      all_correct_words: List[Word],
-                                     candidates: List[CandidateWord]) -> Optional[CandidateWord]:
+                                     candidates: List[CandidateWord]) -> Optional[Tuple[CandidateWord, float]]:
         if not candidates:
             return None
 
         # candidates must be ordered by edit distance
         candidates.sort(key=lambda x: x.distance)
 
-        text_for_prediction = self._build_text_for_prediction(current_word, all_correct_words)
+        text_for_prediction = self.prepare_text_for_prediction(current_word, all_correct_words)
 
         logger.debug(f"Text for prediction {text_for_prediction}")
 
@@ -196,8 +245,12 @@ class RuRobertaCandidateRanker(AbstractCandidateRanker):
                 break
 
             processed_candidate_score = self._process_candidates(text_for_prediction, candidate)
-            candidate_score_pairs.append(processed_candidate_score)
-            previous_edit_distance_candidate = candidate.distance
+            if processed_candidate_score:
+                candidate_score_pairs.append(processed_candidate_score)
+                previous_edit_distance_candidate = candidate.distance
 
-        ranked_candidate_score_pairs = sorted(candidate_score_pairs, key=lambda x: x[1])
-        return ranked_candidate_score_pairs[0][0]
+        if candidate_score_pairs:
+            ranked_candidate_score_pairs = sorted(candidate_score_pairs, key=lambda x: x[1])
+            return ranked_candidate_score_pairs[0]
+        else:
+            return None
