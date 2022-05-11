@@ -1,0 +1,1 @@
+Fine-tuned model located at huggingfaces hub - DmitryPogrebnoy/MedRuRobertaLarge
