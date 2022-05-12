@@ -22,7 +22,7 @@ class PreProcessor:
         download(PreProcessor._stopwords_download_name)
         self._stopwords: Final[List[str]] = stopwords.words('russian')
 
-    def _is_invalid_token(self, token: str) -> bool:
+    def _is_valid_token(self, token: str) -> bool:
         """Checks if the correction token is valid.
 
         The token must not contain punctuation marks or other symbols,
@@ -40,7 +40,7 @@ class PreProcessor:
 
     def generate_words_from_tokens(self, tokens: List[str]) -> Generator[Word, None, None]:
         for id, token in enumerate(tokens):
-            is_valid = self._is_invalid_token(token)
+            is_valid = self._is_valid_token(token)
             if is_valid:
                 # if the token is valid for correction, extract a lemma from it
                 parse: Parse = self._lemmatizer.parse(token)[0]
