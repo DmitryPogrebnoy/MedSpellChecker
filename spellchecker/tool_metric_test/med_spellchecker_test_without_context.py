@@ -1,5 +1,3 @@
-import logging
-
 from tqdm import tqdm
 
 from med_spellchecker import MedSpellchecker
@@ -29,6 +27,5 @@ if __name__ == '__main__':
     """
     Run test without context for MedSpellchecker
     """
-    logging.basicConfig(level=logging.INFO)
     test_result = perform_test()
     print(test_result)

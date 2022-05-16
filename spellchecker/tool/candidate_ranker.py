@@ -140,14 +140,14 @@ class RuRobertaCandidateRanker(AbstractCandidateRanker):
                         (torch.cuda.get_device_properties(0).total_memory / (1024 * 1024)) > 8192
 
         if self._use_gpu:
-            logger.info("RuRobertaCandidateRanker use GPU")
+            print("RuRobertaCandidateRanker use GPU")
             accelerator = Accelerator(fp16=True)
             self._tokenizer = accelerator.prepare(
                 AutoTokenizer.from_pretrained(RuRobertaCandidateRanker._pretrained_model_checkpoint))
             self._model = accelerator.prepare(
                 AutoModelForMaskedLM.from_pretrained(RuRobertaCandidateRanker._pretrained_model_checkpoint))
         else:
-            logger.info("RuRobertaCandidateRanker use CPU")
+            print("RuRobertaCandidateRanker use CPU")
             self._tokenizer = AutoTokenizer.from_pretrained(RuRobertaCandidateRanker._pretrained_model_checkpoint)
             self._model = AutoModelForMaskedLM.from_pretrained(RuRobertaCandidateRanker._pretrained_model_checkpoint)
 
