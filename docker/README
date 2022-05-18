@@ -1,0 +1,18 @@
+First, run medspellchecker container with CUDA 10.1 support:
+docker --tlsverify \
+--tlscacert=cacert.pem \
+--tlscert=cert.pem \
+--tlskey=key.pem \
+-H=tcp://b.dgx:2376 run -it --rm --gpus all pogrebnoy/medspellchecker:1.0.0
+
+Then, run this command for clone MedSpellChecker repo and setup PYTHONPATH:
+git clone https://github.com/DmitryPogrebnoy/MedSpellChecker.git && \
+    export PYTHONPATH=/home/MedSpellChecker/spellchecker/tool/ && \
+    cd /home/MedSpellChecker && \
+    cd /home/MedSpellChecker/spellchecker/tool_metric_test
+
+Run med_spellchecker_test_without_context.py with this command:
+python3.9 med_spellchecker_test_without_context.py
+
+Run med_spellchecker_test_with_context.py with this command:
+python3.9 med_spellchecker_test_with_context.py
