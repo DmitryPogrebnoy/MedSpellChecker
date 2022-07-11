@@ -1,5 +1,6 @@
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://github.com/DmitryPogrebnoy/MedSpellChecker/blob/main/LICENSE)
 [![Project Status: WIP – Initial development is in progress, but there has not yet been a stable, usable release suitable for the public.](https://www.repostatus.org/badges/latest/wip.svg)](https://www.repostatus.org/#wip)
+[![Test](https://github.com/DmitryPogrebnoy/MedSpellChecker/actions/workflows/python-test.yml/badge.svg?branch=main)](https://github.com/DmitryPogrebnoy/MedSpellChecker/actions/workflows/python-test.yml)
 
 # MedSpellChecker
 
