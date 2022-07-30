@@ -1,26 +1,28 @@
-import pickle
-import pymorphy2  # python -m pip install pymorphy2 #python -m pip install gensim
-import Levenshtein  # python -m pip install python-levenshtein
-import stringdist  # python -m pip install stringdist
-from scipy.special import softmax
-from gensim.models import FastText
-
-import pandas as pd
-import numpy as np
-
-from tqdm import tqdm
-import re
 import os
+import pickle
+import re
+
+import Levenshtein  # python -m pip install python-levenshtein
+import numpy as np
+import pandas as pd
+import pymorphy2  # python -m pip install pymorphy2 #python -m pip install gensim
+import stringdist  # python -m pip install stringdist
+from gensim.models import FastText
+from scipy.special import softmax
+from tqdm import tqdm
+
 
 class SpellChecker:
 
     def __init__(self):
         print(os.path.dirname(__file__))
-        self.total_word_dict = pickle.load(open('../data/spellchecker_prototype_v2/total_word_dict.pickle', 'rb'))
+        self.total_word_dict = pickle.load(open(
+            '../data/other_spellcheckers/spellchecker_prototype_v2/total_word_dict.pickle', 'rb'))
         # self.tomsk_no_stop = pickle.load(open(r'spell_checker/data/tomsk_no_stop.pickle', 'rb'))
 
         # self.total_word_dict = self.total_word_dict1 + self.tomsk_no_stop
-        self.wordcount = pickle.load(open('../data/spellchecker_prototype_v2/wordcount.pickle', 'rb'))
+        self.wordcount = pickle.load(
+            open('../data/other_spellcheckers/spellchecker_prototype_v2/wordcount.pickle', 'rb'))
 
         # self.model = FastText.load(r'spell_checker/models/cbow_model_tmsk_all.model', mmap='r')
         # self.model = FastText.load(r'spell_checker/models/cbow_model_tmsk_3.model', mmap='r')
