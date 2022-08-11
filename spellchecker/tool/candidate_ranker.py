@@ -11,55 +11,6 @@ from candidate_word import CandidateWord
 from word import Word
 
 
-class CandidateRankerType(IntEnum):
-    """Supported candidate ranking algorithms."""
-
-    RU_ROBERTA_LARGE_CANDIDATE_RANKER = 0
-
-
-class CandidateRanker:
-    """Candidate word ranker.
-
-        Args:
-            rank_method: rank algorithm to use.
-
-        Attributes:
-            _algorithm (:class:`CandidateRankerType`): The rank algorithm to use.
-            _candidate_ranker (:class:`AbstractCandidateRanker`): An object to
-                rank the candidate words. The concrete object will be chosen based
-                on the value of :attr:`_algorithm`.
-
-        Raises:
-            ValueError: If `algorithm` specifies an invalid rank algorithm.
-    """
-
-    def __init__(self, rank_method: CandidateRankerType = CandidateRankerType.RU_ROBERTA_LARGE_CANDIDATE_RANKER,
-                 use_treshold: bool = True):
-        self._algorithm = rank_method
-        if rank_method == CandidateRankerType.RU_ROBERTA_LARGE_CANDIDATE_RANKER:
-            self._candidate_ranker = RuRobertaCandidateRanker(use_treshold)
-        else:
-            raise ValueError("Unknown candidate word rank type!")
-
-    def prepare_text_for_prediction(self, current_word: Word,
-                                    all_correct_words: List[Word]) -> str:
-        return self._candidate_ranker.prepare_text_for_prediction(current_word, all_correct_words)
-
-    def predict_score(self, text_for_prediction: str,
-                      candidate_value: str) -> Optional[float]:
-        return self._candidate_ranker.predict_score(text_for_prediction, candidate_value)
-
-    def rank_candidates(self, current_word: Word,
-                        all_correct_words: List[Word],
-                        candidates: List[CandidateWord]) -> List[CandidateWord]:
-        return self._candidate_ranker.rank_candidates(current_word, all_correct_words, candidates)
-
-    def pick_most_suitable_candidate(self, current_word: Word,
-                                     all_correct_words: List[Word],
-                                     candidates: List[CandidateWord]) -> Optional[Tuple[CandidateWord, float]]:
-        return self._candidate_ranker.pick_most_suitable_candidate(current_word, all_correct_words, candidates)
-
-
 class AbstractCandidateRanker(ABC):
     @abstractmethod
     def prepare_text_for_prediction(self, current_word: Word,

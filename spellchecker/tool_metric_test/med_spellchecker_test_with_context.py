@@ -1,12 +1,13 @@
 from tqdm import tqdm
 
+from candidate_ranker import RuRobertaCandidateRanker
 from med_spellchecker import MedSpellchecker
 from metric_test_with_context import MetricTestWithContext
 
 
 def med_spellchecker_test(input_batches):
     med_spellchecker = MedSpellchecker(words_list="../../data/dictionaries/processed/processed_lemmatized_all_dict.txt",
-                                       encoding="UTF-8", use_treshold=True)
+                                       encoding="UTF-8", candidate_ranker=RuRobertaCandidateRanker(True))
     result = []
     timer = tqdm(input_batches)
     for batch in timer:

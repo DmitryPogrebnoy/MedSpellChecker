@@ -4,7 +4,7 @@ from pathlib import Path
 from typing import final, List, Optional, Union, IO, Set, Tuple
 
 from candidate_generator import CandidateGenerator
-from candidate_ranker import CandidateRanker, CandidateRankerType
+from candidate_ranker import AbstractCandidateRanker, RuRobertaCandidateRanker
 from candidate_word import CandidateWord
 from edit_distance import EditDistanceAlgo
 from pre_post_processor import PreProcessor
@@ -20,8 +20,7 @@ class MedSpellchecker:
                  encoding: Optional[str] = None,
                  edit_distance_algo: EditDistanceAlgo = EditDistanceAlgo.DAMERAU_OSA_FAST,
                  max_dictionary_edit_distance: int = 2,
-                 candidate_ranker_type: CandidateRankerType = CandidateRankerType.RU_ROBERTA_LARGE_CANDIDATE_RANKER,
-                 use_treshold: bool = True,
+                 candidate_ranker: AbstractCandidateRanker = RuRobertaCandidateRanker(True),
                  handle_compound_words: bool = False,
                  saved_state_folder: Optional[Union[Path, str]] = None):
         self._version = 1
@@ -38,13 +37,13 @@ class MedSpellchecker:
         self._pre_processor: PreProcessor = PreProcessor()
 
         if saved_state_folder is not None:
-            self._candidate_generator = CandidateGenerator(saved_state_folder=saved_state_folder)
+            self._candidate_generator: CandidateGenerator = CandidateGenerator(saved_state_folder=saved_state_folder)
         else:
-            self._candidate_generator = CandidateGenerator(words_list,
-                                                           encoding,
-                                                           edit_distance_algo,
-                                                           max_dictionary_edit_distance)
-            self._candidate_ranker = CandidateRanker(candidate_ranker_type, use_treshold)
+            self._candidate_generator: CandidateGenerator = CandidateGenerator(words_list,
+                                                                               encoding,
+                                                                               edit_distance_algo,
+                                                                               max_dictionary_edit_distance)
+            self._candidate_ranker: AbstractCandidateRanker = candidate_ranker
 
     def save_state(self, path: Union[Path, str]):
         os.makedirs(os.path.dirname(path), exist_ok=True)
