@@ -6,8 +6,10 @@ from metric_test_without_context import MetricTestWithoutContext
 
 
 def med_spellchecker_test(input_word_list):
-    med_spellchecker = MedSpellchecker(words_list="../../data/dictionaries/processed/processed_lemmatized_all_dict.txt",
-                                       encoding="UTF-8", candidate_ranker=RuRobertaCandidateRanker(True))
+    med_spellchecker = MedSpellchecker(
+        words_list="../../../data/dictionaries/processed/processed_lemmatized_all_dict.txt",
+        encoding="UTF-8", candidate_ranker=RuRobertaCandidateRanker(True)
+    )
     result = []
     timer = tqdm(input_word_list)
     for word in timer:
@@ -17,8 +19,9 @@ def med_spellchecker_test(input_word_list):
 
 
 def perform_test():
-    metric_test_without_context = MetricTestWithoutContext('../../data/test/without_context/test_sample_incorrect.txt',
-                                                           '../../data/test/without_context/lexical_word_list.txt')
+    metric_test_without_context = MetricTestWithoutContext(
+        '../../../data/test/without_context/error_precision_words.txt',
+        '../../../data/test/without_context/lexical_precision_words.txt')
     test_med_spellchecker_result = metric_test_without_context.compute_all_metrics(
         med_spellchecker_test, med_spellchecker_test)
     return test_med_spellchecker_result
