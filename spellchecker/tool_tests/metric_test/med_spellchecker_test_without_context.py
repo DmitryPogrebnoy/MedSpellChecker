@@ -2,7 +2,7 @@ from tqdm import tqdm
 
 from candidate_ranker import RuRobertaCandidateRanker
 from med_spellchecker import MedSpellchecker
-from metric_test_without_context import MetricTestWithoutContext
+from common.metric_test_without_context import MetricTestWithoutContext
 
 
 def med_spellchecker_test(input_word_list):
