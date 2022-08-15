@@ -89,21 +89,22 @@ class RuRobertaCandidateRanker(AbstractCandidateRanker):
         self._treshold = 0.000001
         # Required gpu memory in Mb
         self._required_gpu_memory: int = 8192
-        gpu_memory = torch.cuda.get_device_properties(0).total_memory / (1024 * 1024)
+        gpu_memory = torch.cuda.get_device_properties(0).total_memory / (1024 * 1024) \
+            if torch.cuda.is_available() else 0
         self._use_gpu = use_gpu and torch.cuda.is_available() and gpu_memory > self._required_gpu_memory
 
         if torch.cuda.is_available():
             print("This machine has Cuda available!")
+            print(f"Cuda device has {int(gpu_memory)} Mb memory")
+
+            if gpu_memory > self._required_gpu_memory:
+                print(f"Memory of the Cuda device is enough (>{self._required_gpu_memory}Mb) "
+                      f"to use this model on the GPU.")
+            else:
+                print(f"Memory of the Cuda device is NOT enough (<{self._required_gpu_memory}Mb) "
+                      f"to use this model on the GPU.")
         else:
             print("This machine hasn't Cuda available!")
-
-        print(f"Cuda device has {int(gpu_memory)} Mb memory")
-
-        if gpu_memory > self._required_gpu_memory:
-            print(f"Memory of the Cuda device is enough (>{self._required_gpu_memory}Mb) to use this model on the GPU.")
-        else:
-            print(f"Memory of the Cuda device is NOT enough (<{self._required_gpu_memory}Mb) to use this model on the "
-                  "GPU.")
 
         if self._use_gpu:
             print("Model RuRobertaCandidateRanker use GPU")
