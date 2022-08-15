@@ -39,11 +39,11 @@ class MedSpellchecker:
         if saved_state_folder is not None:
             self._candidate_generator: CandidateGenerator = CandidateGenerator(saved_state_folder=saved_state_folder)
         else:
-            self._candidate_generator: CandidateGenerator = CandidateGenerator(words_list,
-                                                                               encoding,
-                                                                               edit_distance_algo,
-                                                                               max_dictionary_edit_distance)
-            self._candidate_ranker: AbstractCandidateRanker = candidate_ranker
+            self._candidate_generator: CandidateGenerator = CandidateGenerator(
+                words_list, encoding, edit_distance_algo, max_dictionary_edit_distance
+            )
+
+        self._candidate_ranker: AbstractCandidateRanker = candidate_ranker
 
     def save_state(self, path: Union[Path, str]):
         os.makedirs(os.path.dirname(path), exist_ok=True)
