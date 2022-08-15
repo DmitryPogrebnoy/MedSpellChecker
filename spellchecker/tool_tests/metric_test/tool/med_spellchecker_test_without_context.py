@@ -20,8 +20,8 @@ def med_spellchecker_test(input_word_list):
 
 def perform_test():
     metric_test_without_context = MetricTestWithoutContext(
-        '../../../data/test/without_context/error_precision_words.txt',
-        '../../../data/test/without_context/lexical_precision_words.txt')
+        '../../../../data/test/without_context/error_precision_words.txt',
+        '../../../../data/test/without_context/lexical_precision_words.txt')
     test_med_spellchecker_result = metric_test_without_context.compute_all_metrics(
         med_spellchecker_test, med_spellchecker_test)
     return test_med_spellchecker_result
