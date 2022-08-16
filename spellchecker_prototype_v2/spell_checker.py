@@ -26,7 +26,7 @@ class SpellChecker:
 
         # self.model = FastText.load(r'spell_checker/models/cbow_model_tmsk_all.model', mmap='r')
         # self.model = FastText.load(r'spell_checker/models/cbow_model_tmsk_3.model', mmap='r')
-        self.model = FastText.load('../data/spellchecker_prototype_v2/models/cbow_model_new.model', mmap='r')
+        self.model = FastText.load('../data/other_spellcheckers/spellchecker_prototype_v2/models/cbow_model_new.model', mmap='r')
         # self.exp = pickle.load(open(r'spell_checker/data/exp.pickle', 'rb'))
 
     def normalize_word(self, word):
