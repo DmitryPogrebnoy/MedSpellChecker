@@ -3,9 +3,6 @@ FROM nvidia/cuda:10.1-devel-ubuntu18.04
 ARG DEBIAN_FRONTEND=noninteractive
 ENV TZ=Europe/Moscow
 
-RUN rm /etc/apt/sources.list.d/cuda.list
-RUN rm /etc/apt/sources.list.d/nvidia-ml.list
-
 WORKDIR /home
 
 RUN apt-get update && \
@@ -22,8 +19,9 @@ RUN apt-get update && \
     apt-get install -y git && \
     apt-get clean
 
-
+# Copy requirements file and delete line with torch version from it
 COPY requirements.txt ./
+RUN sed -i "/torch~=1.11.0/d" ./requirements.txt
 
 # Need install torch manualy since remote host has CUDA 10.1 driver, so torch 1.11 supported only CUDA 10.2
 RUN python3.9 -m pip install -r requirements.txt && \

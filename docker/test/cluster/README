@@ -1,5 +1,16 @@
+How to build?
+
+Run this command from project root:
+sudo docker build -t pogrebnoy/medspellchecker:1.0.0 -f ./docker/test/cluster/Dockerfile .
+
+For push new built image run:
+sudo docker push pogrebnoy/medspellchecker:1.0.0
+
+
+How to use?
+
 First, run medspellchecker container with CUDA 10.1 support:
-docker --tlsverify \
+sudo docker --tlsverify \
 --tlscacert=cacert.pem \
 --tlscert=cert.pem \
 --tlskey=key.pem \
