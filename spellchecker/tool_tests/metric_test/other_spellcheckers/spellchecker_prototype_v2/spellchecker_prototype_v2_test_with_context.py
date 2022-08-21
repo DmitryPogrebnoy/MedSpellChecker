@@ -1,29 +1,29 @@
 from tqdm import tqdm
 
-from common.metric_test_without_context import MetricTestWithoutContext
+from common.metric_test_with_context import MetricTestWithContext
 from spellchecker_prototype_v2.spell_checker import SpellChecker
 
 
-def spellchecker_prototype_v2_test(input_word_list):
+def spellchecker_prototype_v2_test(input_sentences):
     spellchecker_prototype = SpellChecker()
-    word_list = " ".join(input_word_list)
-    timer = tqdm()
-    corrected_word_list = spellchecker_prototype.correct_words(word_list)
-    return {"elapsed": timer.format_dict["elapsed"], "corrected_word_list": corrected_word_list}
+    timer = tqdm(input_sentences)
+    result = []
+    for sentence in timer:
+        corrected_sentence = spellchecker_prototype.correct_words(" ".join(sentence))
+        result.append(corrected_sentence)
+    return {"elapsed": timer.format_dict["elapsed"], "corrected_batch": result}
 
 
 def perform_test():
-    metric_test_without_context = MetricTestWithoutContext(
-        '../../../../../data/test/without_context/error_precision_words.txt',
-        '../../../../../data/test/without_context/lexical_precision_words.txt')
-    return metric_test_without_context.compute_all_metrics(
-        spellchecker_prototype_v2_test, spellchecker_prototype_v2_test)
+    metric_test_with_context = MetricTestWithContext(
+        "../../../../../data/test/with_context/data_for_test_with_context.csv")
+    return metric_test_with_context.compute_all_metrics(spellchecker_prototype_v2_test)
 
 
 if __name__ == '__main__':
     """
     Run test without context for spellchecker prototype v2 from this article https://arxiv.org/abs/2004.04987
-    
+
     For run this test download models (all files) from link 
     (https://drive.google.com/drive/folders/1ubVgiIC2pqDOpA-CbjEqV8Jo8uBbk0qi?usp=sharing) 
     and move it to data/other_spellcheckers/spellchecker_prototype_v2/models folder
