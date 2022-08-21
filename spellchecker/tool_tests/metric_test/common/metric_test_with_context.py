@@ -2,10 +2,15 @@ from typing import final
 
 import pandas as pd
 
+from pre_post_processor import PreProcessor
+
 
 @final
 class MetricTestWithContext:
-    def __init__(self, path_to_data):
+    def __init__(self, path_to_data, ignore_lemmatization=True, debug_info=False):
+        self._ignore_lemmatization = ignore_lemmatization
+        self._pre_processor = PreProcessor()
+        self._debug_info = debug_info
         # Load data
         dataframe = pd.read_csv(path_to_data)
         dataframe.reset_index(drop=True, inplace=True)
@@ -28,19 +33,26 @@ class MetricTestWithContext:
         print("Incorrect words!")
         print(f"Batch id --- Corrected --- Answer")
         for i, corrected_batch in enumerate(result_butches):
-            print(f"Batch {i}")
-            print(f"Original {self.answer_batch[i]}")
-            print(f"Corrected {corrected_batch}")
+            if self._debug_info:
+                print(f"Batch {i}")
+                print(f"Original {self.answer_batch[i]}")
+                print(f"Corrected {corrected_batch}")
             for j, corrected_word in enumerate(corrected_batch):
                 total_count_words += 1
                 if self.pos_incorrect_word[i] != j:
-                    if self.answer_batch[i][j] == corrected_word:
+                    # For test tools which returns lemmatized and non lemmatized words
+                    if self.answer_batch[i][j] == corrected_word or \
+                            (self._ignore_lemmatization and
+                             self.answer_batch[i][j] == self._pre_processor.lemmatize(corrected_word)):
                         lexical_precision_correct_words_count += 1
                     else:
                         print(f"{i} --- {corrected_word} --- {self.answer_batch[i][j]} --- LEXICAL")
                         lexical_precision_incorrect_words_count += 1
                 else:
-                    if self.answer_batch[i][j] == corrected_word:
+                    # For test tools which returns lemmatized and non lemmatized words
+                    if self.answer_batch[i][j] == corrected_word or \
+                            (self._ignore_lemmatization and
+                             self.answer_batch[i][j] == self._pre_processor.lemmatize(corrected_word)):
                         error_precision_correct_words_count += 1
                     else:
                         print(f"{i} --- {corrected_word} --- {self.answer_batch[i][j]} --- ERROR")
