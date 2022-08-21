@@ -1,8 +1,8 @@
-from tqdm import tqdm
+import json
+
+import requests
 
 from common.metric_test_without_context import MetricTestWithoutContext
-import requests
-import json
 
 YANDEX_SPELLER_URL = 'https://speller.yandex.net/services/spellservice.json/checkTexts'
 MAX_CHARS_PER_REQUEST = 10_000
