@@ -19,7 +19,7 @@ sudo docker --tlsverify \
 Then, run this command for clone MedSpellChecker repo and setup PYTHONPATH:
 git clone https://github.com/DmitryPogrebnoy/MedSpellChecker.git && \
     export PYTHONPATH=/home/MedSpellChecker/spellchecker/tool/ && \
-    cd /home/MedSpellChecker/spellchecker/tool_tests/tool
+    cd /home/MedSpellChecker/spellchecker/tool_tests/metric_test/tool
 
 Run med_spellchecker_test_without_context.py with this command:
 python3.9 med_spellchecker_test_without_context.py
