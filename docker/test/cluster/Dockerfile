@@ -24,7 +24,8 @@ COPY requirements.txt ./
 RUN sed -i "/torch~=1.11.0/d" ./requirements.txt
 
 # Need install torch manualy since remote host has CUDA 10.1 driver, so torch 1.11 supported only CUDA 10.2
-RUN python3.9 -m pip install -r requirements.txt && \
+RUN python3.9 -m pip install wheel && \
+    python3.9 -m pip install -r requirements.txt && \
     python3.9 -m pip install torch==1.8.1+cu101 torchvision==0.9.1+cu101 torchaudio==0.8.1 -f https://download.pytorch.org/whl/torch_stable.html
 
 CMD ["bash"]
