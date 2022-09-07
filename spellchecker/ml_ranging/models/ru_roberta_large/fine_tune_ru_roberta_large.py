@@ -57,12 +57,13 @@ def set_device():
             info = pynvml.nvmlDeviceGetMemoryInfo(handle)
             gpus_free_mem_list.append((info.total - info.used) // 1024 ** 3)
         selected_device_number = np.argmax(gpus_free_mem_list)
-        device = torch.device(f"cuda:{selected_device_number}")
-        print(f"Will use device: {torch.cuda.get_device_name(selected_device_number)}")
+        print(selected_device_number)
+        torch.cuda.set_device(torch.device(selected_device_number))
+        print(f"Selected GPU number: {selected_device_number}")
+        print(f"Will use device {torch.cuda.current_device()}: {torch.cuda.get_device_name(selected_device_number)}")
         print(f"Device has {np.max(gpus_free_mem_list)} Gb free memory")
         return selected_device_number
     else:
-        device = torch.device("cpu")
         print(f"We will use device: CPU")
         return None
 
@@ -72,7 +73,8 @@ def print_gpu_memory_stats(device_num):
         return
     handle = pynvml.nvmlDeviceGetHandleByIndex(device_num)
     info = pynvml.nvmlDeviceGetMemoryInfo(handle)
-    print(f"GPU memory occupied: {info.used // 1024 ** 3}/{info.total // 1024 ** 3}  Gb.\n")
+    print(f"All GPU memory occupied: {info.used // 1024 ** 3}/{info.total // 1024 ** 3}  Gb.\n")
+    print(f"Torch GPU {torch.cuda.current_device()} memory stats: {torch.cuda.memory_summary(device_num, True)}")
 
 
 def check_tokenizer_behaviour(tokenizer):
@@ -217,6 +219,7 @@ def train_model(model, optimizer, accelerator, train_dataloader, test_dataloader
         print(f"TRAIN EPOCH {epoch}")
         model.train()
         for step, batch in enumerate(train_dataloader, start=1):
+            print(len(batch))
             loss = model(**batch).loss
             loss = loss / training_args.gradient_accumulation_steps
             accelerator.backward(loss)
@@ -252,16 +255,11 @@ def fine_tune_model():
     setup_random()
     pynvml.nvmlInit()
 
-    device_num = set_device()
-    print_gpu_memory_stats(device_num)
-
     model = AutoModelForMaskedLM.from_pretrained(MODEL_CHECKPOINT)
     print(f"Model {MODEL_CHECKPOINT} loaded.")
-    print_gpu_memory_stats(device_num)
 
     tokenizer = AutoTokenizer.from_pretrained(MODEL_CHECKPOINT)
     print(f"Tokenizer {MODEL_CHECKPOINT} loaded.")
-    print_gpu_memory_stats(device_num)
 
     check_tokenizer_behaviour(tokenizer)
 
@@ -310,10 +308,15 @@ def fine_tune_model():
     if training_args.gradient_checkpointing:
         model.gradient_checkpointing_enable()
 
+    device_num = set_device()
+    print_gpu_memory_stats(device_num)
+
     accelerator = Accelerator(fp16=training_args.fp16)
     adam_w_optim = AdamW(model.parameters(), lr=training_args.learning_rate, weight_decay=training_args.weight_decay)
     model, optimizer, train_dataloader, test_dataloader = accelerator.prepare(model, adam_w_optim, train_dataloader,
                                                                               test_dataloader)
+
+    print_gpu_memory_stats(device_num)
 
     train_model(model, optimizer, accelerator, train_dataloader, test_dataloader, training_args)
 
