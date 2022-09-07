@@ -26,7 +26,8 @@ CHECK_MODEL_NUMBER_CANDIDATE = 20
 
 TRAIN_PART_ANAMNESIS = 0.8
 
-GROUPING_TEXT_CHUNK_SIZE = 2048
+# model.max_position_embeddings = 514 (but it's a bug and real value is 512)
+GROUPING_TEXT_CHUNK_SIZE = 512
 
 MLM_PROBABILITY = 0.15
 
@@ -59,22 +60,20 @@ def set_device():
         selected_device_number = np.argmax(gpus_free_mem_list)
         print(selected_device_number)
         torch.cuda.set_device(torch.device(selected_device_number))
-        print(f"Selected GPU number: {selected_device_number}")
-        print(f"Will use device {torch.cuda.current_device()}: {torch.cuda.get_device_name(selected_device_number)}")
+        print(f"Selected GPU number: {torch.cuda.current_device()}")
+        print(
+            f"Will use device {torch.cuda.current_device()}: {torch.cuda.get_device_name(torch.cuda.current_device())}")
         print(f"Device has {np.max(gpus_free_mem_list)} Gb free memory")
-        return selected_device_number
     else:
         print(f"We will use device: CPU")
-        return None
 
 
-def print_gpu_memory_stats(device_num):
-    if device_num is None:
-        return
-    handle = pynvml.nvmlDeviceGetHandleByIndex(device_num)
+def print_gpu_memory_stats():
+    current_device = torch.cuda.current_device()
+    handle = pynvml.nvmlDeviceGetHandleByIndex(current_device)
     info = pynvml.nvmlDeviceGetMemoryInfo(handle)
     print(f"All GPU memory occupied: {info.used // 1024 ** 3}/{info.total // 1024 ** 3}  Gb.\n")
-    print(f"Torch GPU {torch.cuda.current_device()} memory stats: {torch.cuda.memory_summary(device_num, True)}")
+    print(f"Torch GPU {current_device} memory stats: {torch.cuda.memory_allocated(current_device) // 1024 ** 3} Gb")
 
 
 def check_tokenizer_behaviour(tokenizer):
@@ -219,7 +218,6 @@ def train_model(model, optimizer, accelerator, train_dataloader, test_dataloader
         print(f"TRAIN EPOCH {epoch}")
         model.train()
         for step, batch in enumerate(train_dataloader, start=1):
-            print(len(batch))
             loss = model(**batch).loss
             loss = loss / training_args.gradient_accumulation_steps
             accelerator.backward(loss)
@@ -273,7 +271,6 @@ def fine_tune_model():
 
     anamnesis = get_anamnesis()
     tokenizer = train_tokenizer(tokenizer, anamnesis)
-
     check_tokenizer_behaviour(tokenizer)
 
     # Save new tokenizer to dir
@@ -308,15 +305,14 @@ def fine_tune_model():
     if training_args.gradient_checkpointing:
         model.gradient_checkpointing_enable()
 
-    device_num = set_device()
-    print_gpu_memory_stats(device_num)
+    set_device()
+    print_gpu_memory_stats()
 
     accelerator = Accelerator(fp16=training_args.fp16)
     adam_w_optim = AdamW(model.parameters(), lr=training_args.learning_rate, weight_decay=training_args.weight_decay)
     model, optimizer, train_dataloader, test_dataloader = accelerator.prepare(model, adam_w_optim, train_dataloader,
                                                                               test_dataloader)
-
-    print_gpu_memory_stats(device_num)
+    print_gpu_memory_stats()
 
     train_model(model, optimizer, accelerator, train_dataloader, test_dataloader, training_args)
 
