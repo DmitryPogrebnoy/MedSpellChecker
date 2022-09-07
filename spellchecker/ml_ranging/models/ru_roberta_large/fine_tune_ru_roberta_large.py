@@ -51,6 +51,12 @@ def setup_random():
 
 def get_device():
     if torch.cuda.is_available():
+        print([torch.cuda.memory_usage(device_num) for device_num in range(0, torch.cuda.device_count())])
+        print([torch.cuda.memory_allocated(device_num) for device_num in range(0, torch.cuda.device_count())])
+        print([torch.cuda.memory_reserved(device_num) for device_num in range(0, torch.cuda.device_count())])
+        print([torch.cuda.max_memory_allocated(device_num) for device_num in range(0, torch.cuda.device_count())])
+        print([torch.cuda.max_memory_reserved(device_num) for device_num in range(0, torch.cuda.device_count())])
+
         device = torch.device("cuda")
         print(f"Will use device: {torch.cuda.get_device_name(0)}")
         return device
