@@ -49,26 +49,28 @@ def setup_random():
     random.seed(random_state)
 
 
-def get_device():
+def set_device():
     if torch.cuda.is_available():
-        print([torch.cuda.memory_usage(device_num) for device_num in range(0, torch.cuda.device_count())])
-        print([torch.cuda.memory_allocated(device_num) for device_num in range(0, torch.cuda.device_count())])
-        print([torch.cuda.memory_reserved(device_num) for device_num in range(0, torch.cuda.device_count())])
-        print([torch.cuda.max_memory_allocated(device_num) for device_num in range(0, torch.cuda.device_count())])
-        print([torch.cuda.max_memory_reserved(device_num) for device_num in range(0, torch.cuda.device_count())])
-
-        device = torch.device("cuda")
-        print(f"Will use device: {torch.cuda.get_device_name(0)}")
-        return device
+        gpus_free_mem_list = []
+        for device_num in range(pynvml.nvmlDeviceGetCount()):
+            handle = pynvml.nvmlDeviceGetHandleByIndex(device_num)
+            info = pynvml.nvmlDeviceGetMemoryInfo(handle)
+            gpus_free_mem_list.append((info.total - info.used) // 1024 ** 3)
+        selected_device_number = np.argmax(gpus_free_mem_list)
+        device = torch.device(f"cuda:{selected_device_number}")
+        print(f"Will use device: {torch.cuda.get_device_name(selected_device_number)}")
+        print(f"Device has {np.max(gpus_free_mem_list)} Gb free memory")
+        return selected_device_number
     else:
         device = torch.device("cpu")
         print(f"We will use device: CPU")
-        return device
+        return None
 
 
-def print_gpu_memory_stats():
-    pynvml.nvmlInit()
-    handle = pynvml.nvmlDeviceGetHandleByIndex(0)
+def print_gpu_memory_stats(device_num):
+    if device_num is None:
+        return
+    handle = pynvml.nvmlDeviceGetHandleByIndex(device_num)
     info = pynvml.nvmlDeviceGetMemoryInfo(handle)
     print(f"GPU memory occupied: {info.used // 1024 ** 3}/{info.total // 1024 ** 3}  Gb.\n")
 
@@ -248,16 +250,18 @@ def train_model(model, optimizer, accelerator, train_dataloader, test_dataloader
 
 def fine_tune_model():
     setup_random()
-    device = get_device()
-    print_gpu_memory_stats()
+    pynvml.nvmlInit()
+
+    device_num = set_device()
+    print_gpu_memory_stats(device_num)
 
     model = AutoModelForMaskedLM.from_pretrained(MODEL_CHECKPOINT)
     print(f"Model {MODEL_CHECKPOINT} loaded.")
-    print_gpu_memory_stats()
+    print_gpu_memory_stats(device_num)
 
     tokenizer = AutoTokenizer.from_pretrained(MODEL_CHECKPOINT)
     print(f"Tokenizer {MODEL_CHECKPOINT} loaded.")
-    print_gpu_memory_stats()
+    print_gpu_memory_stats(device_num)
 
     check_tokenizer_behaviour(tokenizer)
 
