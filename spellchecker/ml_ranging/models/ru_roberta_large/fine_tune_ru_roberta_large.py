@@ -11,7 +11,7 @@ from datasets import Dataset, DatasetDict
 from torch.optim import AdamW
 from torch.utils.data.dataloader import DataLoader
 from tqdm.auto import tqdm
-from transformers import AutoModelForMaskedLM, AutoTokenizer, DataCollatorForWholeWordMask, TrainingArguments
+from transformers import AutoModelForMaskedLM, AutoTokenizer, TrainingArguments, DataCollatorForLanguageModeling
 
 MODEL_CHECKPOINT = "sberbank-ai/ruRoberta-large"
 PATH_TO_PREPROCESSED_ANAMNESIS = "../../../../data/anamnesis/processed/all_anamnesis.csv"
@@ -294,7 +294,7 @@ def fine_tune_model():
     print("Example of decoded first text block")
     print(tokenizer.decode(lm_datasets["train"][0]["input_ids"]))
 
-    data_collator = DataCollatorForWholeWordMask(tokenizer=tokenizer, mlm_probability=MLM_PROBABILITY)
+    data_collator = DataCollatorForLanguageModeling(tokenizer=tokenizer, mlm_probability=MLM_PROBABILITY)
     training_args = build_training_arguments()
 
     train_dataloader = DataLoader(lm_datasets["train"],
