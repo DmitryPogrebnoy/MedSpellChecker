@@ -73,8 +73,8 @@ def print_gpu_memory_stats():
     current_device = torch.cuda.current_device()
     handle = pynvml.nvmlDeviceGetHandleByIndex(current_device)
     info = pynvml.nvmlDeviceGetMemoryInfo(handle)
-    print(f"All GPU memory occupied: {info.used // 1024 ** 3}/{info.total // 1024 ** 3}  Gb.\n")
-    print(f"Torch GPU {current_device} memory stats: {torch.cuda.memory_allocated(current_device) // 1024 ** 3} Gb")
+    print(f"All GPU memory occupied: {info.used // 1024 ** 3}/{info.total // 1024 ** 3}  Gb.")
+    print(f"Torch GPU {current_device} memory allocated: {torch.cuda.memory_allocated(current_device) // 1024 ** 3} Gb")
 
 
 def check_tokenizer_behaviour(tokenizer):
