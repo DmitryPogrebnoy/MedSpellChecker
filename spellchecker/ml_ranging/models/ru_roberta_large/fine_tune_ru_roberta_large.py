@@ -65,6 +65,7 @@ def set_device():
             f"Will use device {torch.cuda.current_device()}: {torch.cuda.get_device_name(torch.cuda.current_device())}")
         print(f"Device has {np.max(gpus_free_mem_list)} Gb free memory")
     else:
+        torch.device("cpu")
         print(f"We will use device: CPU")
 
 
@@ -125,10 +126,12 @@ def train_tokenizer(tokenizer, anamnesis):
     return new_tokenizer
 
 
-def check_model_prediction(model, tokenizer, text):
+def check_model_prediction(model, tokenizer, text, on_gpu):
     print("\nCheck model prediction")
     print(f"Text: {text}")
     inputs = tokenizer(text, return_tensors="pt")
+    if on_gpu:
+        inputs = inputs.to(torch.cuda.current_device())
     print(f"Inputs ids: {inputs['input_ids']}")
     print(inputs)
     # Find the location of <mask> and extract its logits
@@ -281,7 +284,7 @@ def fine_tune_model():
 
     # Check model prediction candidates
     check_model_test_text = f"ультразвуковой исследование {tokenizer.mask_token} полость"
-    check_model_prediction(model, tokenizer, check_model_test_text)
+    check_model_prediction(model, tokenizer, check_model_test_text, False)
 
     anamnesis_list = anamnesis["anamnesis"].values
     dataset = prepare_datasets(anamnesis_list)
@@ -316,9 +319,9 @@ def fine_tune_model():
 
     train_model(model, optimizer, accelerator, train_dataloader, test_dataloader, training_args)
 
-    check_model_prediction(model, tokenizer, check_model_test_text)
-
     model.save_pretrained(PATH_TO_SAVE_FINETUNED_MODEL)
+
+    check_model_prediction(model, tokenizer, check_model_test_text, True)
 
 
 if __name__ == '__main__':
