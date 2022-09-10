@@ -42,6 +42,7 @@ GRADIENT_CHECKPOINTING_TRAINING_ARG = True
 PER_DEVICE_EVAL_BATCH_SIZE_TRAINING_ARG = 1
 FP16_TRAINING_ARG = True
 
+PATH_TO_SAVE_FINETUNED_MODEL_METRIC_HISTORY = "../../../../data/ml/ru_roberta_large_finetuned/metric_history.csv"
 PATH_TO_SAVE_FINETUNED_MODEL = "../../../../data/ml/ru_roberta_large_finetuned/model"
 
 
@@ -215,13 +216,19 @@ def build_training_arguments():
 
 
 def train_model(model, optimizer, accelerator, train_dataloader, test_dataloader, training_args):
+    train_perplexity_history = []
+    train_mean_loss_history = []
+    test_perplexity_history = []
+    test_mean_loss_history = []
     for epoch in range(training_args.num_train_epochs):
         progress_bar = tqdm(range(len(train_dataloader)))
 
         print(f"TRAIN EPOCH {epoch}")
         model.train()
+        train_loses = []
         for step, batch in enumerate(train_dataloader, start=1):
             loss = model(**batch).loss
+            train_loses.append(accelerator.gather(loss.repeat(BATCH_SIZE_TRAINING_ARG)))
             loss = loss / training_args.gradient_accumulation_steps
             accelerator.backward(loss)
             if step % training_args.gradient_accumulation_steps == 0:
@@ -229,27 +236,52 @@ def train_model(model, optimizer, accelerator, train_dataloader, test_dataloader
                 optimizer.zero_grad()
             progress_bar.update(1)
 
+        train_loses = torch.cat(train_loses)
+        train_loses = train_loses[: len(train_dataloader)]
+        train_mean_loss = torch.mean(train_loses).cpu().detach().numpy()
+        train_mean_loss_history.append(train_mean_loss)
+
         print_gpu_memory_stats()
         print(f"EVAL EPOCH {epoch}")
         progress_bar = tqdm(range(len(test_dataloader)))
         model.eval()
-        losses = []
+        test_losses = []
         for step, batch in enumerate(test_dataloader):
             with torch.no_grad():
                 outputs = model(**batch)
 
             loss = outputs.loss
-            losses.append(accelerator.gather(loss.repeat(BATCH_SIZE_TRAINING_ARG)))
+            test_losses.append(accelerator.gather(loss.repeat(BATCH_SIZE_TRAINING_ARG)))
             progress_bar.update(1)
 
-        losses = torch.cat(losses)
-        losses = losses[: len(test_dataloader)]
-        try:
-            perplexity = math.exp(torch.mean(losses))
-        except OverflowError:
-            perplexity = float("inf")
+        test_losses = torch.cat(test_losses)
+        test_losses = test_losses[: len(test_dataloader)]
+        test_mean_loss = torch.mean(test_losses).cpu().detach().numpy()
+        test_mean_loss_history.append(test_mean_loss)
 
-        print(f">>> Epoch {epoch}: Perplexity: {perplexity}")
+        try:
+            train_perplexity = math.exp(train_mean_loss)
+        except OverflowError:
+            train_perplexity = float("inf")
+        train_perplexity_history.append(train_perplexity)
+
+        try:
+            test_perplexity = math.exp(torch.mean(test_losses))
+        except OverflowError:
+            test_perplexity = float("inf")
+        test_perplexity_history.append(test_perplexity)
+
+        print(f">>> Epoch {epoch}:"
+              f"\nTrain Mean Loss: {train_mean_loss}"
+              f"\nTest Mean Loss: {test_mean_loss}"
+              f"\nTrain Perplexity: {train_perplexity}"
+              f"\nTest Perplexity: {test_perplexity}")
+
+    df_metrics = pd.DataFrame({"train_perplexity": train_perplexity_history,
+                               "train_mean_loss": train_mean_loss_history,
+                               "test_perplexity": test_perplexity_history,
+                               "test_mean_loss": test_mean_loss_history})
+    df_metrics.to_csv(PATH_TO_SAVE_FINETUNED_MODEL_METRIC_HISTORY)
 
 
 def fine_tune_model():
