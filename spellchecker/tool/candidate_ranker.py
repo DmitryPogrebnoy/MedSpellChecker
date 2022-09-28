@@ -1,6 +1,5 @@
 import logging
 from abc import abstractmethod, ABC
-from enum import IntEnum
 from typing import List, final, Optional, Tuple
 
 import torch
@@ -151,7 +150,7 @@ class RuRobertaCandidateRanker(AbstractCandidateRanker):
             for token, score in top_20_tokens:
                 logger.debug(f"{self._tokenizer.decode([token])}, score: {score}")
 
-        ## Sum score of candidate word parts
+        ## Mean score of candidate word parts
         candidate_score = 0.0
         for token in candidate_token_ids:
             candidate_score += softmax_mask_token_logits[:, token][0]
