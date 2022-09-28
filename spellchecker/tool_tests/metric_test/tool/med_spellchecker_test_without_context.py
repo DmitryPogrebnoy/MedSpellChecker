@@ -2,12 +2,12 @@ from tqdm import tqdm
 
 from candidate_ranker import RuRobertaCandidateRanker
 from med_spellchecker import MedSpellchecker
-from common.metric_test_without_context import MetricTestWithoutContext
+from metric_test_without_context import MetricTestWithoutContext
 
 
 def med_spellchecker_test(input_word_list):
     med_spellchecker = MedSpellchecker(
-        words_list="../../../data/dictionaries/processed/processed_lemmatized_all_dict.txt",
+        words_list="../../../../data/dictionaries/processed/processed_lemmatized_all_dict.txt",
         encoding="UTF-8", candidate_ranker=RuRobertaCandidateRanker(True)
     )
     result = []

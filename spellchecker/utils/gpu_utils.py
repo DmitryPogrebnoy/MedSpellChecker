@@ -17,6 +17,8 @@ def set_device() -> bool:
         torch.device("cpu")
         print(f"We will use device: CPU")
 
+    pynvml.nvmlInit()
+
     if torch.cuda.is_available():
         gpus_free_mem_list = []
         for device_num in range(pynvml.nvmlDeviceGetCount()):
@@ -33,12 +35,11 @@ def set_device() -> bool:
             set_cpu_device()
             return False
 
-        print(selected_gpu_device_number)
         torch.cuda.set_device(torch.device(selected_gpu_device_number))
         print(f"Selected GPU number: {torch.cuda.current_device()}")
         print(f"Will use device {torch.cuda.current_device()}: "
               f"{torch.cuda.get_device_name(torch.cuda.current_device())}")
-        print(f"Device has {selected_gpu_device_memory} Gb free memory")
+        print(f"Device has {selected_gpu_device_memory} Mb free memory")
         return True
     else:
         print("There is no available GPU")

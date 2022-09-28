@@ -4,10 +4,10 @@ from typing import List, final, Optional, Tuple
 
 import torch
 from accelerate import Accelerator
-from spellchecker.utils.gpu_utils import set_device
 from transformers import AutoTokenizer, AutoModelForMaskedLM
 
 from candidate_word import CandidateWord
+from gpu_utils import set_device
 from word import Word
 
 
@@ -89,7 +89,7 @@ class RuRobertaCandidateRanker(AbstractCandidateRanker):
         self._treshold = 0.000001
         self._use_gpu = set_device() if use_gpu else False
 
-        accelerator = Accelerator(fp16=True, cpu=self._use_gpu)
+        accelerator = Accelerator(fp16=True, cpu=not self._use_gpu)
         self._tokenizer = accelerator.prepare(
             AutoTokenizer.from_pretrained(RuRobertaCandidateRanker._pretrained_model_checkpoint))
         self._model = accelerator.prepare(

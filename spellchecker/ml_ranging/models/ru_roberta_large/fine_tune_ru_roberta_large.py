@@ -4,15 +4,15 @@ from collections import Counter
 
 import numpy as np
 import pandas as pd
-import pynvml
 import torch
 from accelerate import Accelerator
 from datasets import Dataset, DatasetDict
-from spellchecker.utils.gpu_utils import set_device, print_gpu_memory_stats
 from torch.optim import AdamW
 from torch.utils.data.dataloader import DataLoader
 from tqdm.auto import tqdm
 from transformers import AutoModelForMaskedLM, AutoTokenizer, TrainingArguments, DataCollatorForLanguageModeling
+
+from gpu_utils import set_device, print_gpu_memory_stats
 
 MODEL_CHECKPOINT = "sberbank-ai/ruRoberta-large"
 PATH_TO_PREPROCESSED_ANAMNESIS = "../../../../data/anamnesis/processed/all_anamnesis.csv"
@@ -260,7 +260,6 @@ def train_model(model, optimizer, accelerator, train_dataloader, test_dataloader
 
 def fine_tune_model():
     setup_random()
-    pynvml.nvmlInit()
 
     model = AutoModelForMaskedLM.from_pretrained(MODEL_CHECKPOINT)
     print(f"Model {MODEL_CHECKPOINT} loaded.")
