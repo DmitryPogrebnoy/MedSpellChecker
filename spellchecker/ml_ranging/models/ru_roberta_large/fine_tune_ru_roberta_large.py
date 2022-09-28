@@ -8,6 +8,7 @@ import pynvml
 import torch
 from accelerate import Accelerator
 from datasets import Dataset, DatasetDict
+from spellchecker.utils.gpu_utils import set_device, print_gpu_memory_stats
 from torch.optim import AdamW
 from torch.utils.data.dataloader import DataLoader
 from tqdm.auto import tqdm
@@ -49,33 +50,6 @@ PATH_TO_SAVE_FINETUNED_MODEL = "../../../../data/ml/ru_roberta_large_finetuned/m
 def setup_random():
     random_state = 100
     random.seed(random_state)
-
-
-def set_device():
-    if torch.cuda.is_available():
-        gpus_free_mem_list = []
-        for device_num in range(pynvml.nvmlDeviceGetCount()):
-            handle = pynvml.nvmlDeviceGetHandleByIndex(device_num)
-            info = pynvml.nvmlDeviceGetMemoryInfo(handle)
-            gpus_free_mem_list.append((info.total - info.used) // 1024 ** 3)
-        selected_device_number = np.argmax(gpus_free_mem_list)
-        print(selected_device_number)
-        torch.cuda.set_device(torch.device(selected_device_number))
-        print(f"Selected GPU number: {torch.cuda.current_device()}")
-        print(
-            f"Will use device {torch.cuda.current_device()}: {torch.cuda.get_device_name(torch.cuda.current_device())}")
-        print(f"Device has {np.max(gpus_free_mem_list)} Gb free memory")
-    else:
-        torch.device("cpu")
-        print(f"We will use device: CPU")
-
-
-def print_gpu_memory_stats():
-    current_device = torch.cuda.current_device()
-    handle = pynvml.nvmlDeviceGetHandleByIndex(current_device)
-    info = pynvml.nvmlDeviceGetMemoryInfo(handle)
-    print(f"All GPU memory occupied: {info.used // 1024 ** 3}/{info.total // 1024 ** 3}  Gb.")
-    print(f"Torch GPU {current_device} memory allocated: {torch.cuda.memory_allocated(current_device) // 1024 ** 3} Gb")
 
 
 def check_tokenizer_behaviour(tokenizer):

@@ -4,6 +4,7 @@ from typing import List, final, Optional, Tuple
 
 import torch
 from accelerate import Accelerator
+from spellchecker.utils.gpu_utils import set_device
 from transformers import AutoTokenizer, AutoModelForMaskedLM
 
 from candidate_word import CandidateWord
@@ -86,36 +87,13 @@ class RuRobertaCandidateRanker(AbstractCandidateRanker):
         self._version = 1
         self._use_treshold = use_treshold
         self._treshold = 0.000001
-        # Required gpu memory in Mb
-        self._required_gpu_memory: int = 8192
-        gpu_memory = torch.cuda.get_device_properties(0).total_memory / (1024 * 1024) \
-            if torch.cuda.is_available() else 0
-        self._use_gpu = use_gpu and torch.cuda.is_available() and gpu_memory > self._required_gpu_memory
+        self._use_gpu = set_device() if use_gpu else False
 
-        if torch.cuda.is_available():
-            print("This machine has Cuda available!")
-            print(f"Cuda device has {int(gpu_memory)} Mb memory")
-
-            if gpu_memory > self._required_gpu_memory:
-                print(f"Memory of the Cuda device is enough (>{self._required_gpu_memory}Mb) "
-                      f"to use this model on the GPU.")
-            else:
-                print(f"Memory of the Cuda device is NOT enough (<{self._required_gpu_memory}Mb) "
-                      f"to use this model on the GPU.")
-        else:
-            print("This machine hasn't Cuda available!")
-
-        if self._use_gpu:
-            print("Model RuRobertaCandidateRanker use GPU")
-            accelerator = Accelerator(fp16=True)
-            self._tokenizer = accelerator.prepare(
-                AutoTokenizer.from_pretrained(RuRobertaCandidateRanker._pretrained_model_checkpoint))
-            self._model = accelerator.prepare(
-                AutoModelForMaskedLM.from_pretrained(RuRobertaCandidateRanker._pretrained_model_checkpoint))
-        else:
-            print("Model RuRobertaCandidateRanker use CPU")
-            self._tokenizer = AutoTokenizer.from_pretrained(RuRobertaCandidateRanker._pretrained_model_checkpoint)
-            self._model = AutoModelForMaskedLM.from_pretrained(RuRobertaCandidateRanker._pretrained_model_checkpoint)
+        accelerator = Accelerator(fp16=True, cpu=self._use_gpu)
+        self._tokenizer = accelerator.prepare(
+            AutoTokenizer.from_pretrained(RuRobertaCandidateRanker._pretrained_model_checkpoint))
+        self._model = accelerator.prepare(
+            AutoModelForMaskedLM.from_pretrained(RuRobertaCandidateRanker._pretrained_model_checkpoint))
 
     def prepare_text_for_prediction(self, current_word: Word,
                                     all_correct_words: List[Word]) -> str:
