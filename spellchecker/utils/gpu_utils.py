@@ -1,3 +1,5 @@
+import os
+
 import numpy as np
 import pynvml
 import torch
@@ -16,6 +18,11 @@ def set_device() -> bool:
     def set_cpu_device():
         torch.device("cpu")
         print(f"We will use device: CPU")
+
+    if os.system("nvidia-smi"):
+        print('Nvidia driver not installed')
+        set_cpu_device()
+        return False
 
     pynvml.nvmlInit()
 
