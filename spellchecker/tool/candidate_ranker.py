@@ -86,7 +86,7 @@ class RuRobertaCandidateRanker(AbstractCandidateRanker):
     def __init__(self, use_treshold: bool = True, use_gpu: bool = True):
         self._version = 1
         self._use_treshold = use_treshold
-        self._treshold = 0.000001
+        self._treshold = 0.0000001
         self._use_gpu = set_device() if use_gpu else False
 
         accelerator = Accelerator(fp16=True, cpu=not self._use_gpu)
