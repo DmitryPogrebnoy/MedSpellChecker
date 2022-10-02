@@ -35,7 +35,7 @@ MLM_PROBABILITY = 0.15
 OUTPUT_DIR_TRAINING_ARG = f"{MODEL_CHECKPOINT}-finetuned"
 OVERWRITE_OUTPUT_DIR_TRAINING_ARG = True
 BATCH_SIZE_TRAINING_ARG = 256
-NUM_EPOCH_TRAINING_ARG = 100
+NUM_EPOCH_TRAINING_ARG = 10
 LR_TRAINING_ARG = 1e-5
 WEIGHT_DECAY_TRAINING_ARG = 0.01
 PER_DEVICE_TRAIN_BATCH_SIZE_TRAINING_ARG = 1
@@ -278,8 +278,9 @@ def fine_tune_model():
     # So let's use all words from existed anamnesis, and each word should appear at least two times.
 
     anamnesis = get_anamnesis()
-    tokenizer = train_tokenizer(tokenizer, anamnesis)
-    check_tokenizer_behaviour(tokenizer)
+    # No need to update tokenizer because it's messing up input ids and pretrained model works much worse than before
+    # tokenizer = train_tokenizer(tokenizer, anamnesis)
+    # check_tokenizer_behaviour(tokenizer)
 
     # Save new tokenizer to dir
     tokenizer.save_pretrained(PATH_TO_NEW_TOKENIZER)
