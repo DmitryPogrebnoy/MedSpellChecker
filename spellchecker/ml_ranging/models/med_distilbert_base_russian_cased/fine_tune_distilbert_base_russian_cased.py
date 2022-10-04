@@ -17,21 +17,17 @@ from gpu_utils import set_device, print_gpu_memory_stats
 MODEL_CHECKPOINT = "DmitryPogrebnoy/distilbert-base-russian-cased"
 PATH_TO_PREPROCESSED_ANAMNESIS = "../../../../data/anamnesis/processed/all_anamnesis.csv"
 
-TRAIN_TOKENIZER_DATA_MIN_COUNT_WORD = 2
-TRAIN_TOKENIZER_DATA_MIN_LENGTH_WORD = 2
-TRAIN_TOKENIZER_BATCH_SIZE = 32
-
 PATH_TO_NEW_TOKENIZER = "../../../../data/ml/med_distilbert_base_russian_cased/tokenizer"
 
 CHECK_MODEL_NUMBER_CANDIDATE = 20
 
 TRAIN_PART_ANAMNESIS = 0.8
 
-# model.max_position_embeddings = 515 (but it's a bug and real value is 512)
 GROUPING_TEXT_CHUNK_SIZE = 512
 
 MLM_PROBABILITY = 0.15
 
+OUTPUT_DIR_TRAINING_ARG = f"{MODEL_CHECKPOINT}-finetuned"
 OVERWRITE_OUTPUT_DIR_TRAINING_ARG = True
 BATCH_SIZE_TRAINING_ARG = 256
 NUM_EPOCH_TRAINING_ARG = 100
@@ -150,6 +146,7 @@ def group_datasets_text(tokenized_dataset):
 
 def build_training_arguments():
     training_args = TrainingArguments(
+        output_dir=OUTPUT_DIR_TRAINING_ARG,
         overwrite_output_dir=OVERWRITE_OUTPUT_DIR_TRAINING_ARG,
         num_train_epochs=NUM_EPOCH_TRAINING_ARG,
         learning_rate=LR_TRAINING_ARG,
