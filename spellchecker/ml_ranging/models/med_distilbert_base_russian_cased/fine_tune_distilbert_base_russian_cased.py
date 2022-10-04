@@ -271,9 +271,6 @@ def fine_tune_model():
                                  batch_size=training_args.per_device_train_batch_size,
                                  collate_fn=data_collator)
 
-    if training_args.gradient_checkpointing:
-        model.gradient_checkpointing_enable()
-
     set_device()
     print_gpu_memory_stats()
 
