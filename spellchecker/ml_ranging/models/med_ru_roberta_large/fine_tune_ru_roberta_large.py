@@ -50,6 +50,8 @@ PATH_TO_SAVE_FINETUNED_MODEL = "../../../../data/ml/ru_roberta_large_finetuned/m
 def setup_random():
     random_state = 100
     random.seed(random_state)
+    torch.manual_seed(random_state)
+    torch.cuda.manual_seed(random_state)
 
 
 def check_tokenizer_behaviour(tokenizer):
