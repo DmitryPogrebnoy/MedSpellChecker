@@ -9,7 +9,7 @@ from datasets import Dataset, DatasetDict
 from torch.utils.data.dataloader import DataLoader
 from tqdm.auto import tqdm
 from transformers import DistilBertForMaskedLM, DistilBertTokenizer, DataCollatorForWholeWordMask, \
-    enable_full_determinism
+    set_seed
 
 from gpu_utils import set_device, print_gpu_memory_stats
 
@@ -42,8 +42,7 @@ def setup_random():
     random.seed(random_state)
     torch.manual_seed(random_state)
     torch.cuda.manual_seed(random_state)
-    enable_full_determinism(True)
-
+    set_seed(random_state)
 
 def get_anamnesis():
     processed_anamnesis = pd.read_csv(PATH_TO_PREPROCESSED_ANAMNESIS, header=None, names=["anamnesis"])
@@ -134,7 +133,7 @@ def compute_model_metrics(model, tokenizer, dataset, is_gpu_used, name):
                                  collate_fn=data_collator)
 
     accelerator = Accelerator(mixed_precision="fp16" if FP16_TRAINING_ARG else None,
-                              device_placement=True if is_gpu_used else False)
+                              cpu=False if is_gpu_used else True)
     model, test_dataloader = accelerator.prepare(model, test_dataloader)
 
     return get_model_metrics(model, accelerator, test_dataloader)

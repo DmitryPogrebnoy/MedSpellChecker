@@ -10,7 +10,8 @@ from datasets import Dataset, DatasetDict
 from torch.optim import AdamW
 from torch.utils.data.dataloader import DataLoader
 from tqdm.auto import tqdm
-from transformers import AutoModelForMaskedLM, AutoTokenizer, TrainingArguments, DataCollatorForLanguageModeling
+from transformers import AutoModelForMaskedLM, AutoTokenizer, TrainingArguments, DataCollatorForLanguageModeling, \
+    set_seed
 
 from gpu_utils import set_device, print_gpu_memory_stats
 
@@ -52,6 +53,7 @@ def setup_random():
     random.seed(random_state)
     torch.manual_seed(random_state)
     torch.cuda.manual_seed(random_state)
+    set_seed(random_state)
 
 
 def check_tokenizer_behaviour(tokenizer):
