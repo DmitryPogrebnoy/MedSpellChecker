@@ -319,7 +319,7 @@ def fine_tune_model():
     set_device()
     print_gpu_memory_stats()
 
-    accelerator = Accelerator(fp16=training_args.fp16)
+    accelerator = Accelerator(mixed_precision="fp16" if training_args.fp16 else None)
     adam_w_optim = AdamW(model.parameters(), lr=training_args.learning_rate, weight_decay=training_args.weight_decay)
     model, optimizer, train_dataloader, test_dataloader = accelerator.prepare(model, adam_w_optim, train_dataloader,
                                                                               test_dataloader)

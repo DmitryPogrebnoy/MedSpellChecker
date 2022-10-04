@@ -89,7 +89,7 @@ class RuRobertaCandidateRanker(AbstractCandidateRanker):
         self._treshold = 0.0000001
         self._use_gpu = set_device() if use_gpu else False
 
-        accelerator = Accelerator(fp16=True, cpu=not self._use_gpu)
+        accelerator = Accelerator(mixed_precision="fp16" if self._use_gpu else None, cpu=not self._use_gpu)
         self._tokenizer = accelerator.prepare(
             AutoTokenizer.from_pretrained(RuRobertaCandidateRanker._pretrained_model_checkpoint))
         self._model = accelerator.prepare(
