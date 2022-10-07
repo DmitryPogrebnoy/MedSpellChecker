@@ -46,7 +46,7 @@ class AbstractBertCandidateRanker(AbstractCandidateRanker):
         inputs = self._tokenizer(text_for_prediction, return_tensors='pt')
         logger.debug(inputs)
         input_ids = inputs["input_ids"]
-        attention_mask = inputs["input_ids"]
+        attention_mask = inputs["attention_mask"]
         if self._use_gpu:
             input_ids = input_ids.cuda()
             attention_mask = attention_mask.cuda()
