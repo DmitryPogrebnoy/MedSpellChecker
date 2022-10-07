@@ -43,8 +43,10 @@ if __name__ == '__main__':
     Run test with context for MedSpellchecker
     """
     test_result_roberta = run_test(med_spellchecker_roberta_test)
+    print()
     print("MedSpellChecker with RoBERTa")
     print(test_result_roberta)
     test_result_distilbert = run_test(med_spellchecker_distilbert_test)
+    print()
     print("MedSpellChecker with DistilBERT")
     print(test_result_distilbert)

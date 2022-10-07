@@ -21,7 +21,7 @@ class AbstractBertCandidateRanker(AbstractCandidateRanker):
         self._treshold: float = treshold
         self._use_gpu: bool = set_device() if use_gpu else False
 
-        accelerator = Accelerator(mixed_precision="fp16" if self._use_gpu else None, cpu=not self._use_gpu)
+        accelerator = Accelerator(cpu=not self._use_gpu)
         self._tokenizer = accelerator.prepare(
             AutoTokenizer.from_pretrained(pretrained_model_checkpoint))
         self._model = accelerator.prepare(
