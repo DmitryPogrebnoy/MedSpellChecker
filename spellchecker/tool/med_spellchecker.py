@@ -3,11 +3,12 @@ import os
 from pathlib import Path
 from typing import final, List, Optional, Union, IO, Set, Tuple
 
+from abstract_candidate_ranker import AbstractCandidateRanker
 from candidate_generator import CandidateGenerator
-from candidate_ranker import AbstractCandidateRanker, RuRobertaCandidateRanker
 from candidate_word import CandidateWord
 from edit_distance import EditDistanceAlgo
 from pre_post_processor import PreProcessor
+from roberta_candidate_ranker import RuRobertaCandidateRanker
 from word import Word
 
 logger = logging.getLogger(__name__)
