@@ -1,12 +1,13 @@
 from typing import List
 
 from med_spellchecker import MedSpellchecker
+from roberta_candidate_ranker import RuRobertaCandidateRanker
 
 
 def test_load_save(two_word_list: List[str], spellchecker_by_two_word_list_2: MedSpellchecker):
     path = "./"
     spellchecker_by_two_word_list_2.save_state(path)
-    spellchecker = MedSpellchecker(words_list=two_word_list, saved_state_folder=path)
+    spellchecker = MedSpellchecker(RuRobertaCandidateRanker(True), words_list=two_word_list, saved_state_folder=path)
     assert spellchecker._version == 1
     assert spellchecker._candidate_generator._words_dictionary == {'дом', 'ром'}
     assert spellchecker._candidate_generator._deletes_word_dictionary == {

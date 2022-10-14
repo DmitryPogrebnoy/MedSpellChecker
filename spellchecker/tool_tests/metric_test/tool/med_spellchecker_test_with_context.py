@@ -5,13 +5,13 @@ from med_spellchecker import MedSpellchecker
 from metric_test_with_context import MetricTestWithContext
 from roberta_candidate_ranker import RuRobertaCandidateRanker
 
-med_spellchecker_ru_roberta = MedSpellchecker(
-    words_list="../../../../data/dictionaries/processed/processed_lemmatized_all_dict.txt",
-    encoding="UTF-8", candidate_ranker=RuRobertaCandidateRanker(True))
+med_spellchecker_ru_roberta = MedSpellchecker(candidate_ranker=RuRobertaCandidateRanker(True),
+                                              words_list="../../../../data/dictionaries/processed/processed_lemmatized_all_dict.txt",
+                                              encoding="UTF-8")
 
-med_spellchecker_ru_distilbert = MedSpellchecker(
-    words_list="../../../../data/dictionaries/processed/processed_lemmatized_all_dict.txt",
-    encoding="UTF-8", candidate_ranker=RuDistilBertCandidateRanker(True))
+med_spellchecker_ru_distilbert = MedSpellchecker(candidate_ranker=RuDistilBertCandidateRanker(True),
+                                                 words_list="../../../../data/dictionaries/processed/processed_lemmatized_all_dict.txt",
+                                                 encoding="UTF-8")
 
 
 def med_spellchecker_roberta_test(input_batches):

@@ -8,7 +8,6 @@ from candidate_generator import CandidateGenerator
 from candidate_word import CandidateWord
 from edit_distance import EditDistanceAlgo
 from pre_post_processor import PreProcessor
-from roberta_candidate_ranker import RuRobertaCandidateRanker
 from word import Word
 
 logger = logging.getLogger(__name__)
@@ -16,12 +15,11 @@ logger = logging.getLogger(__name__)
 
 @final
 class MedSpellchecker:
-    def __init__(self,
+    def __init__(self, candidate_ranker: AbstractCandidateRanker,
                  words_list: Optional[Union[Path, str, IO[str], List[str]]] = None,
                  encoding: Optional[str] = None,
                  edit_distance_algo: EditDistanceAlgo = EditDistanceAlgo.DAMERAU_OSA_FAST,
                  max_dictionary_edit_distance: int = 2,
-                 candidate_ranker: AbstractCandidateRanker = RuRobertaCandidateRanker(True),
                  handle_compound_words: bool = False,
                  saved_state_folder: Optional[Union[Path, str]] = None):
         self._version = 1

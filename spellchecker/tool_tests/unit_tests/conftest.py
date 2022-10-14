@@ -25,29 +25,29 @@ def ranker(request) -> AbstractCandidateRanker:
 
 @pytest.fixture
 def spellchecker_by_one_word_list_1(one_word_list: List[str], ranker: AbstractCandidateRanker) -> MedSpellchecker:
-    return MedSpellchecker(one_word_list, candidate_ranker=ranker, max_dictionary_edit_distance=1)
+    return MedSpellchecker(candidate_ranker=ranker, words_list=one_word_list, max_dictionary_edit_distance=1)
 
 
 @pytest.fixture
 def spellchecker_by_one_word_list_2(one_word_list: List[str], ranker: AbstractCandidateRanker) -> MedSpellchecker:
-    return MedSpellchecker(one_word_list, candidate_ranker=ranker, max_dictionary_edit_distance=2)
+    return MedSpellchecker(candidate_ranker=ranker, words_list=one_word_list, max_dictionary_edit_distance=2)
 
 
 @pytest.fixture
 def spellchecker_by_one_word_list_3(one_word_list: List[str], ranker: AbstractCandidateRanker) -> MedSpellchecker:
-    return MedSpellchecker(one_word_list, candidate_ranker=ranker, max_dictionary_edit_distance=3)
+    return MedSpellchecker(candidate_ranker=ranker, words_list=one_word_list, max_dictionary_edit_distance=3)
 
 
 @pytest.fixture
 def spellchecker_by_two_word_list_1(two_word_list: List[str], ranker: AbstractCandidateRanker) -> MedSpellchecker:
-    return MedSpellchecker(two_word_list, candidate_ranker=ranker, max_dictionary_edit_distance=1)
+    return MedSpellchecker(candidate_ranker=ranker, words_list=two_word_list, max_dictionary_edit_distance=1)
 
 
 @pytest.fixture
 def spellchecker_by_two_word_list_2(two_word_list: List[str], ranker: AbstractCandidateRanker) -> MedSpellchecker:
-    return MedSpellchecker(two_word_list, candidate_ranker=ranker, max_dictionary_edit_distance=2)
+    return MedSpellchecker(candidate_ranker=ranker, words_list=two_word_list, max_dictionary_edit_distance=2)
 
 
 @pytest.fixture
 def spellchecker_by_two_word_list_3(two_word_list: List[str], ranker: AbstractCandidateRanker) -> MedSpellchecker:
-    return MedSpellchecker(two_word_list, candidate_ranker=ranker, max_dictionary_edit_distance=3)
+    return MedSpellchecker(candidate_ranker=ranker, words_list=two_word_list, max_dictionary_edit_distance=3)

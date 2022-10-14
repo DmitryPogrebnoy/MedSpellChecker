@@ -7,18 +7,16 @@ from roberta_candidate_ranker import RuRobertaCandidateRanker
 
 
 def med_spellchecker_roberta_test(input_word_list):
-    med_spellchecker = MedSpellchecker(
-        words_list="../../../../data/dictionaries/processed/processed_lemmatized_all_dict.txt",
-        encoding="UTF-8", candidate_ranker=RuRobertaCandidateRanker(True)
-    )
+    med_spellchecker = MedSpellchecker(candidate_ranker=RuRobertaCandidateRanker(True),
+                                       words_list="../../../../data/dictionaries/processed/processed_lemmatized_all_dict.txt",
+                                       encoding="UTF-8")
     return apply_spellchecker_to_test_data(input_word_list, med_spellchecker)
 
 
 def med_spellchecker_distilbert_test(input_word_list):
-    med_spellchecker = MedSpellchecker(
-        words_list="../../../../data/dictionaries/processed/processed_lemmatized_all_dict.txt",
-        encoding="UTF-8", candidate_ranker=RuDistilBertCandidateRanker(True)
-    )
+    med_spellchecker = MedSpellchecker(candidate_ranker=RuDistilBertCandidateRanker(True),
+                                       words_list="../../../../data/dictionaries/processed/processed_lemmatized_all_dict.txt",
+                                       encoding="UTF-8")
     return apply_spellchecker_to_test_data(input_word_list, med_spellchecker)
 
 
