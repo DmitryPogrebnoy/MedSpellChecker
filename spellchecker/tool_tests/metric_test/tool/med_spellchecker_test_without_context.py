@@ -5,19 +5,20 @@ from med_spellchecker import MedSpellchecker
 from metric_test_without_context import MetricTestWithoutContext
 from roberta_candidate_ranker import RuRobertaCandidateRanker
 
+med_spellchecker_ru_roberta = MedSpellchecker(candidate_ranker=RuRobertaCandidateRanker(True),
+                                              words_list="../../../../data/dictionaries/processed/processed_lemmatized_all_dict.txt",
+                                              encoding="UTF-8")
+med_spellchecker_ru_distilbert = MedSpellchecker(candidate_ranker=RuDistilBertCandidateRanker(True),
+                                                 words_list="../../../../data/dictionaries/processed/processed_lemmatized_all_dict.txt",
+                                                 encoding="UTF-8")
+
 
 def med_spellchecker_roberta_test(input_word_list):
-    med_spellchecker = MedSpellchecker(candidate_ranker=RuRobertaCandidateRanker(True),
-                                       words_list="../../../../data/dictionaries/processed/processed_lemmatized_all_dict.txt",
-                                       encoding="UTF-8")
-    return apply_spellchecker_to_test_data(input_word_list, med_spellchecker)
+    return apply_spellchecker_to_test_data(input_word_list, med_spellchecker_ru_roberta)
 
 
 def med_spellchecker_distilbert_test(input_word_list):
-    med_spellchecker = MedSpellchecker(candidate_ranker=RuDistilBertCandidateRanker(True),
-                                       words_list="../../../../data/dictionaries/processed/processed_lemmatized_all_dict.txt",
-                                       encoding="UTF-8")
-    return apply_spellchecker_to_test_data(input_word_list, med_spellchecker)
+    return apply_spellchecker_to_test_data(input_word_list, med_spellchecker_ru_distilbert)
 
 
 def apply_spellchecker_to_test_data(input_word_list, med_spellchecker):
@@ -26,13 +27,11 @@ def apply_spellchecker_to_test_data(input_word_list, med_spellchecker):
     for word in timer:
         fixed_text = med_spellchecker.fix_text(word)
         result.append(fixed_text)
-    return {"elapsed": timer.format_dict["elapsed"], "corrected_word_list": result}
+    return timer.format_dict["elapsed"], result
 
 
 def run_test(error_precision_spellchecker_function, lexical_precision_spellchecker_function):
-    metric_test_without_context = MetricTestWithoutContext(
-        '../../../../data/test/without_context/error_precision_words.txt',
-        '../../../../data/test/without_context/lexical_precision_words.txt')
+    metric_test_without_context = MetricTestWithoutContext()
     test_med_spellchecker_result = metric_test_without_context.compute_all_metrics(
         error_precision_spellchecker_function, lexical_precision_spellchecker_function)
     return test_med_spellchecker_result

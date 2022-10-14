@@ -9,6 +9,11 @@ from pre_post_processor import PreProcessor
 
 @final
 class MetricTestWithContext:
+    ERROR_TYPE_TO_DATA_PATH = {"Wrong_character": "../../../../data/test/with_context/data_for_test_with_context.csv",
+                               "Missing_character": "../../../../data/test/with_context/data_for_test_with_context.csv",
+                               "Extra_character": "../../../../data/test/with_context/data_for_test_with_context.csv",
+                               "Shuffled_character": "../../../../data/test/with_context/data_for_test_with_context.csv"}
+
     WORD_PER_SECOND_KEY: str = "words_per_second"
     ERROR_PRECISION_KEY: str = "error_precision"
     LEXICAL_PRECISION_KEY: str = "lexical_precision"
@@ -32,13 +37,9 @@ class MetricTestWithContext:
             self.logger.setLevel(logging.INFO)
 
     def compute_all_metrics(self, spellchecker_function):
-        metrics = {"Wrong_character": "../../../../data/test/with_context/data_for_test_with_context.csv",
-                   "Missing_character": "../../../../data/test/with_context/data_for_test_with_context.csv",
-                   "Extra_character": "../../../../data/test/with_context/data_for_test_with_context.csv",
-                   "Shuffled_character": "../../../../data/test/with_context/data_for_test_with_context.csv"}
         table = []
 
-        for metric_name, path_to_data in metrics.items():
+        for metric_name, path_to_data in self.ERROR_TYPE_TO_DATA_PATH.items():
             # Load data
             dataframe = pd.read_csv(path_to_data)
             dataframe.reset_index(drop=True, inplace=True)
