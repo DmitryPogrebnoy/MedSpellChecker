@@ -19,7 +19,7 @@ class PreProcessor:
         self._tokenizer: Final[MosesTokenizer] = MosesTokenizer(lang="ru")
         self._lemmatizer: Final[MorphAnalyzer] = MorphAnalyzer()
         # Download nltk stopwords dict
-        download(PreProcessor._stopwords_download_name)
+        download(PreProcessor._stopwords_download_name, quiet=True)
         self._stopwords: Final[List[str]] = stopwords.words('russian')
 
     def _is_valid_token(self, token: str) -> bool:
