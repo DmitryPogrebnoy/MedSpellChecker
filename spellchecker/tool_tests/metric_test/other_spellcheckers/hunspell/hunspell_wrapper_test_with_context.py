@@ -24,8 +24,7 @@ def hunspell_tool_test(input_sentence):
 
 
 def perform_test():
-    metric_test_with_context = MetricTestWithContext(
-        "../../../../../data/test/with_context/data_for_test_with_context.csv")
+    metric_test_with_context = MetricTestWithContext()
     return metric_test_with_context.compute_all_metrics(hunspell_tool_test)
 
 

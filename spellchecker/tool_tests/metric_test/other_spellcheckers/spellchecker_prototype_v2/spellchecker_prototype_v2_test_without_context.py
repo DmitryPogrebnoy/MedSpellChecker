@@ -13,9 +13,7 @@ def spellchecker_prototype_v2_test(input_word_list):
 
 
 def perform_test():
-    metric_test_without_context = MetricTestWithoutContext(
-        '../../../../../data/test/without_context/error_precision_words.txt',
-        '../../../../../data/test/without_context/lexical_precision_words.txt')
+    metric_test_without_context = MetricTestWithoutContext()
     return metric_test_without_context.compute_all_metrics(
         spellchecker_prototype_v2_test, spellchecker_prototype_v2_test)
 

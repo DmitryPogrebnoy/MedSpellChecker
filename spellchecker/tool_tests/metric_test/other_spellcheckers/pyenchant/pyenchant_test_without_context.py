@@ -1,7 +1,8 @@
+import enchant
 from tqdm import tqdm
 
 from common.metric_test_without_context import MetricTestWithoutContext
-import enchant
+
 
 def pyenchant_tool_test(input_word_list):
     speller = enchant.Dict("ru")
@@ -17,9 +18,7 @@ def pyenchant_tool_test(input_word_list):
 
 
 def perform_test():
-    metric_test_without_context = MetricTestWithoutContext(
-        '../../../../../data/test/without_context/error_precision_words.txt',
-        '../../../../../data/test/without_context/lexical_precision_words.txt')
+    metric_test_without_context = MetricTestWithoutContext()
     return metric_test_without_context.compute_all_metrics(pyenchant_tool_test, pyenchant_tool_test)
 
 

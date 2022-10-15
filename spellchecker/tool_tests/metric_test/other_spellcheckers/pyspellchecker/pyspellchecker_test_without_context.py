@@ -2,7 +2,6 @@ from spellchecker import SpellChecker
 from tqdm import tqdm
 
 from common.metric_test_without_context import MetricTestWithoutContext
-from aspell import Speller
 
 
 def pyspellchecker_tool_test(input_word_list):
@@ -16,9 +15,7 @@ def pyspellchecker_tool_test(input_word_list):
 
 
 def perform_test():
-    metric_test_without_context = MetricTestWithoutContext(
-        '../../../../../data/test/without_context/error_precision_words.txt',
-        '../../../../../data/test/without_context/lexical_precision_words.txt')
+    metric_test_without_context = MetricTestWithoutContext()
     return metric_test_without_context.compute_all_metrics(pyspellchecker_tool_test, pyspellchecker_tool_test)
 
 

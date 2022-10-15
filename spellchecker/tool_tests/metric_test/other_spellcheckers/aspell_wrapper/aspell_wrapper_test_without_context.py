@@ -1,7 +1,7 @@
+from aspell import Speller
 from tqdm import tqdm
 
 from common.metric_test_without_context import MetricTestWithoutContext
-from aspell import Speller
 
 
 def aspell_tool_test(input_word_list):
@@ -18,9 +18,7 @@ def aspell_tool_test(input_word_list):
 
 
 def perform_test():
-    metric_test_without_context = MetricTestWithoutContext(
-        '../../../../../data/test/without_context/error_precision_words.txt',
-        '../../../../../data/test/without_context/lexical_precision_words.txt')
+    metric_test_without_context = MetricTestWithoutContext()
     return metric_test_without_context.compute_all_metrics(aspell_tool_test, aspell_tool_test)
 
 

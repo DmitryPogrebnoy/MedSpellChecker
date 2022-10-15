@@ -1,7 +1,7 @@
+from symspellpy import SymSpell
 from tqdm import tqdm
 
 from common.metric_test_without_context import MetricTestWithoutContext
-from symspellpy import SymSpell, Verbosity
 
 basic_frequency_dict = '../../../../../data/other_spellcheckers/symspell/ru-100k.txt'
 
@@ -19,9 +19,7 @@ def symspell_py_lookup_compound_test(frequency_dict_path, input_word_list):
 
 
 def perform_test():
-    metric_test_without_context = MetricTestWithoutContext(
-        '../../../../../data/test/without_context/error_precision_words.txt',
-        '../../../../../data/test/without_context/lexical_precision_words.txt')
+    metric_test_without_context = MetricTestWithoutContext()
     return metric_test_without_context.compute_all_metrics(
         lambda x: symspell_py_lookup_compound_test(basic_frequency_dict, x),
         lambda x: symspell_py_lookup_compound_test(basic_frequency_dict, x))
