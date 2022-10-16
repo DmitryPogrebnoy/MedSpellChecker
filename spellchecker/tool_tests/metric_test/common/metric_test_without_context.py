@@ -8,14 +8,15 @@ from tabulate import tabulate
 @final
 class MetricTestWithoutContext:
     # First path to data for error precision test, second path to data for lexical precision test
-    ERROR_TYPE_TO_DATA_PATH = {"Wrong_character": ('../../../../data/test/without_context/error_precision_words.txt',
-                                                   '../../../../data/test/without_context/lexical_precision_words.txt'),
-                               "Missing_character": ('../../../../data/test/without_context/error_precision_words.txt',
-                                                     '../../../../data/test/without_context/lexical_precision_words.txt'),
-                               "Extra_character": ('../../../../data/test/without_context/error_precision_words.txt',
-                                                   '../../../../data/test/without_context/lexical_precision_words.txt'),
-                               "Shuffled_character": ('../../../../data/test/without_context/error_precision_words.txt',
-                                                      '../../../../data/test/without_context/lexical_precision_words.txt')}
+    ERROR_TYPE_TO_DATA_PATH = {
+        "Wrong_character": ('../../../../data/test/without_context/data_wrong_char_without_context.csv',
+                            '../../../../data/test/without_context/lexical_precision_words.txt'),
+        "Missing_character": ('../../../../data/test/without_context/data_missing_char_without_context.csv',
+                              '../../../../data/test/without_context/lexical_precision_words.txt'),
+        "Extra_character": ('../../../../data/test/without_context/data_extra_char_without_context.csv',
+                            '../../../../data/test/without_context/lexical_precision_words.txt'),
+        "Shuffled_character": ('../../../../data/test/without_context/data_shuffled_char_without_context.csv',
+                               '../../../../data/test/without_context/lexical_precision_words.txt')}
 
     WORD_PER_SECOND_KEY: str = "words_per_second"
     ERROR_PRECISION_KEY: str = "error_precision"
@@ -67,13 +68,9 @@ class MetricTestWithoutContext:
     def _load_data(self, error_path_to_data, lexical_path_to_data):
         # Load word data for error precision test
         # Format - {word}{several spaces}{answer-words separeted by comma}
-        with open(error_path_to_data) as file:
-            error_precision_test_incorrect_lines = file.readlines()
-        error_precision_splitted_test_incorrect_lines = list(map(lambda x: x.split(maxsplit=1),
-                                                                 error_precision_test_incorrect_lines))
-        error_word_list = list(map(lambda x: x[0], error_precision_splitted_test_incorrect_lines))
-        error_answer_list = list(map(lambda x: list(map(lambda y: y.strip(), x[1].split(', '))),
-                                     error_precision_splitted_test_incorrect_lines))
+        df = pd.read_csv(error_path_to_data)
+        error_word_list = df.incorrect_word
+        error_answer_list = df.correct_word
 
         # Load word list for lexical precision test
         with open(lexical_path_to_data) as file:

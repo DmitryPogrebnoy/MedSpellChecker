@@ -2,6 +2,7 @@ from symspellpy import SymSpell
 from tqdm import tqdm
 
 from common.metric_test_with_context import MetricTestWithContext
+from other_spellcheckers.utils import ERROR_TYPE_TO_DATA_PATH_WITH_CONTEXT
 
 basic_frequency_dict = '../../../../../data/other_spellcheckers/symspell/ru-100k.txt'
 
@@ -18,12 +19,13 @@ def symspell_py_lookup_compound_test(frequency_dict_path, input_sentence):
             suggestions = sym_spell_py.lookup_compound(word, max_edit_distance=2)
             corrected_sentence.append(suggestions[0].term)
         result.append(corrected_sentence)
-    return {"elapsed": timer.format_dict["elapsed"], "corrected_batch": result}
+    return timer.format_dict["elapsed"], result
 
 
 def perform_test():
     metric_test_with_context = MetricTestWithContext()
     return metric_test_with_context.compute_all_metrics(
+        ERROR_TYPE_TO_DATA_PATH_WITH_CONTEXT,
         lambda x: symspell_py_lookup_compound_test(basic_frequency_dict, x))
 
 

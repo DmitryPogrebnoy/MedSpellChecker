@@ -3,6 +3,7 @@ import json
 import requests
 
 from common.metric_test_with_context import MetricTestWithContext
+from other_spellcheckers.utils import ERROR_TYPE_TO_DATA_PATH_WITH_CONTEXT
 
 YANDEX_SPELLER_URL = 'https://speller.yandex.net/services/spellservice.json/checkTexts'
 MAX_CHARS_PER_REQUEST = 10_000
@@ -72,12 +73,12 @@ def yandex_speller_tool_test(input_batches):
                     corrected_sentence.append(word)
             result.append(corrected_sentence)
 
-    return {"elapsed": timer, "corrected_batch": result}
+    return timer, result
 
 
 def perform_test():
     metric_test_with_context = MetricTestWithContext()
-    return metric_test_with_context.compute_all_metrics(yandex_speller_tool_test)
+    return metric_test_with_context.compute_all_metrics(ERROR_TYPE_TO_DATA_PATH_WITH_CONTEXT, yandex_speller_tool_test)
 
 
 if __name__ == '__main__':

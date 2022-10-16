@@ -4,6 +4,7 @@ from distilbert_candidate_ranker import RuDistilBertCandidateRanker
 from med_spellchecker import MedSpellchecker
 from metric_test_with_context import MetricTestWithContext
 from roberta_candidate_ranker import RuRobertaCandidateRanker
+from tool.utils import ERROR_TYPE_TO_DATA_PATH_WITH_CONTEXT
 
 med_spellchecker_ru_roberta = MedSpellchecker(candidate_ranker=RuRobertaCandidateRanker(True),
                                               words_list="../../../../data/dictionaries/processed/processed_lemmatized_all_dict.txt",
@@ -33,7 +34,8 @@ def apply_model_to_test(input_batches, med_spellchecker):
 
 def run_test(spellchecker_function):
     metric_test_with_context = MetricTestWithContext()
-    test_med_spellchecker_result = metric_test_with_context.compute_all_metrics(spellchecker_function)
+    test_med_spellchecker_result = metric_test_with_context.compute_all_metrics(ERROR_TYPE_TO_DATA_PATH_WITH_CONTEXT,
+                                                                                spellchecker_function)
     return test_med_spellchecker_result
 
 
