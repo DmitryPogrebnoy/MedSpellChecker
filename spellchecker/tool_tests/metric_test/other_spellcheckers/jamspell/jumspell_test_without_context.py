@@ -2,6 +2,7 @@ from jamspell import TSpellCorrector
 from tqdm import tqdm
 
 from common.metric_test_without_context import MetricTestWithoutContext
+from other_spellcheckers.utils import ERROR_TYPE_TO_DATA_PATH_WITHOUT_CONTEXT
 
 jumspell_model_lib = "../../../../../data/other_spellcheckers/jumspell/ru_small.bin"
 
@@ -21,6 +22,7 @@ def jumspell_test(input_word_list):
 def perform_test():
     metric_test_without_context = MetricTestWithoutContext()
     return metric_test_without_context.compute_all_metrics(
+        ERROR_TYPE_TO_DATA_PATH_WITHOUT_CONTEXT,
         lambda x: jumspell_test(x),
         lambda x: jumspell_test(x))
 

@@ -4,6 +4,7 @@ from distilbert_candidate_ranker import RuDistilBertCandidateRanker
 from med_spellchecker import MedSpellchecker
 from metric_test_without_context import MetricTestWithoutContext
 from roberta_candidate_ranker import RuRobertaCandidateRanker
+from tool.utils import ERROR_TYPE_TO_DATA_PATH_WITHOUT_CONTEXT
 
 med_spellchecker_ru_roberta = MedSpellchecker(candidate_ranker=RuRobertaCandidateRanker(True),
                                               words_list="../../../../data/dictionaries/processed/processed_lemmatized_all_dict.txt",
@@ -33,6 +34,7 @@ def apply_spellchecker_to_test_data(input_word_list, med_spellchecker):
 def run_test(error_precision_spellchecker_function, lexical_precision_spellchecker_function):
     metric_test_without_context = MetricTestWithoutContext()
     test_med_spellchecker_result = metric_test_without_context.compute_all_metrics(
+        ERROR_TYPE_TO_DATA_PATH_WITHOUT_CONTEXT,
         error_precision_spellchecker_function, lexical_precision_spellchecker_function)
     return test_med_spellchecker_result
 

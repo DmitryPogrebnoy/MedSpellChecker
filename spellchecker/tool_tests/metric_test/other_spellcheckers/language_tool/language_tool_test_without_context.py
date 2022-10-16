@@ -2,6 +2,7 @@ from language_tool_python import LanguageTool
 from tqdm import tqdm
 
 from common.metric_test_without_context import MetricTestWithoutContext
+from other_spellcheckers.utils import ERROR_TYPE_TO_DATA_PATH_WITHOUT_CONTEXT
 
 
 def language_tool_test(input_word_list):
@@ -16,7 +17,8 @@ def language_tool_test(input_word_list):
 
 def perform_test():
     metric_test_without_context = MetricTestWithoutContext()
-    return metric_test_without_context.compute_all_metrics(language_tool_test, language_tool_test)
+    return metric_test_without_context.compute_all_metrics(ERROR_TYPE_TO_DATA_PATH_WITHOUT_CONTEXT,
+                                                           language_tool_test, language_tool_test)
 
 
 if __name__ == '__main__':

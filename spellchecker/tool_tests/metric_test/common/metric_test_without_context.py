@@ -7,16 +7,6 @@ from tabulate import tabulate
 
 @final
 class MetricTestWithoutContext:
-    # First path to data for error precision test, second path to data for lexical precision test
-    ERROR_TYPE_TO_DATA_PATH = {
-        "Wrong_character": ('../../../../data/test/without_context/data_wrong_char_without_context.csv',
-                            '../../../../data/test/without_context/lexical_precision_words.txt'),
-        "Missing_character": ('../../../../data/test/without_context/data_missing_char_without_context.csv',
-                              '../../../../data/test/without_context/lexical_precision_words.txt'),
-        "Extra_character": ('../../../../data/test/without_context/data_extra_char_without_context.csv',
-                            '../../../../data/test/without_context/lexical_precision_words.txt'),
-        "Shuffled_character": ('../../../../data/test/without_context/data_shuffled_char_without_context.csv',
-                               '../../../../data/test/without_context/lexical_precision_words.txt')}
 
     WORD_PER_SECOND_KEY: str = "words_per_second"
     ERROR_PRECISION_KEY: str = "error_precision"
@@ -78,10 +68,11 @@ class MetricTestWithoutContext:
 
         return error_word_list, error_answer_list, lexical_word_list
 
-    def compute_all_metrics(self, error_precision_spellchecker_function, lexical_precision_spellchecker_function):
+    def compute_all_metrics(self, error_type_to_data_path,
+                            error_precision_spellchecker_function, lexical_precision_spellchecker_function):
         table = []
 
-        for metric_name, path_to_data in self.ERROR_TYPE_TO_DATA_PATH.items():
+        for metric_name, path_to_data in error_type_to_data_path.items():
             error_path_to_data, lexical_path_to_data = path_to_data
             # Load data
             error_word_list, error_answer_list, lexical_word_list = self._load_data(

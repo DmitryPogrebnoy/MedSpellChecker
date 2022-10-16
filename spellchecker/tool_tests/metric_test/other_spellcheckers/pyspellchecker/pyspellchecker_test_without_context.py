@@ -2,6 +2,7 @@ from spellchecker import SpellChecker
 from tqdm import tqdm
 
 from common.metric_test_without_context import MetricTestWithoutContext
+from other_spellcheckers.utils import ERROR_TYPE_TO_DATA_PATH_WITHOUT_CONTEXT
 
 
 def pyspellchecker_tool_test(input_word_list):
@@ -16,7 +17,8 @@ def pyspellchecker_tool_test(input_word_list):
 
 def perform_test():
     metric_test_without_context = MetricTestWithoutContext()
-    return metric_test_without_context.compute_all_metrics(pyspellchecker_tool_test, pyspellchecker_tool_test)
+    return metric_test_without_context.compute_all_metrics(ERROR_TYPE_TO_DATA_PATH_WITHOUT_CONTEXT,
+                                                           pyspellchecker_tool_test, pyspellchecker_tool_test)
 
 
 if __name__ == '__main__':
