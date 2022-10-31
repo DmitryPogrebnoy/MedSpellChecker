@@ -1,7 +1,8 @@
 from tqdm import tqdm
 
 from common.metric_test_with_context import MetricTestWithContext
-from other_spellcheckers.utils import ERROR_TYPE_TO_DATA_PATH_WITH_CONTEXT
+from other_spellcheckers.utils import SIMPLE_ERROR_TYPE_TO_DATA_PATH_WITH_CONTEXT, \
+    MISSING_SPACE_ERROR_TYPE_TO_DATA_PATH_WITH_CONTEXT, EXTRA_SPACE_ERROR_TYPE_TO_DATA_PATH_WITH_CONTEXT
 from spellchecker_prototype_v2.spell_checker import SpellChecker
 
 
@@ -17,8 +18,11 @@ def spellchecker_prototype_v2_test(input_sentences):
 
 def perform_test():
     metric_test_with_context = MetricTestWithContext()
-    return metric_test_with_context.compute_all_metrics(ERROR_TYPE_TO_DATA_PATH_WITH_CONTEXT,
-                                                        spellchecker_prototype_v2_test)
+    return metric_test_with_context.compute_all_metrics(
+        SIMPLE_ERROR_TYPE_TO_DATA_PATH_WITH_CONTEXT,
+        MISSING_SPACE_ERROR_TYPE_TO_DATA_PATH_WITH_CONTEXT,
+        EXTRA_SPACE_ERROR_TYPE_TO_DATA_PATH_WITH_CONTEXT,
+        spellchecker_prototype_v2_test)
 
 
 if __name__ == '__main__':

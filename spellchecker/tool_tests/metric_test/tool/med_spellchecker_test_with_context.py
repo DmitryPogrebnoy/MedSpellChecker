@@ -4,23 +4,40 @@ from distilbert_candidate_ranker import RuDistilBertCandidateRanker
 from med_spellchecker import MedSpellchecker
 from metric_test_with_context import MetricTestWithContext
 from roberta_candidate_ranker import RuRobertaCandidateRanker
-from tool.utils import ERROR_TYPE_TO_DATA_PATH_WITH_CONTEXT
-
-med_spellchecker_ru_roberta = MedSpellchecker(candidate_ranker=RuRobertaCandidateRanker(True),
-                                              words_list="../../../../data/dictionaries/processed/processed_lemmatized_all_dict.txt",
-                                              encoding="UTF-8")
-
-med_spellchecker_ru_distilbert = MedSpellchecker(candidate_ranker=RuDistilBertCandidateRanker(True),
-                                                 words_list="../../../../data/dictionaries/processed/processed_lemmatized_all_dict.txt",
-                                                 encoding="UTF-8")
+from tool.utils import SIMPLE_ERROR_TYPE_TO_DATA_PATH_WITH_CONTEXT, MISSING_SPACE_ERROR_TYPE_TO_DATA_PATH_WITH_CONTEXT, \
+    EXTRA_SPACE_ERROR_TYPE_TO_DATA_PATH_WITH_CONTEXT
 
 
-def med_spellchecker_roberta_test(input_batches):
-    return apply_model_to_test(input_batches, med_spellchecker_ru_roberta)
+def med_spellchecker_roberta_test_no_space_handling(input_batches):
+    med_spellchecker_ru_roberta_no_space_handling = MedSpellchecker(
+        candidate_ranker=RuRobertaCandidateRanker(True),
+        words_list="../../../../data/dictionaries/processed/processed_lemmatized_all_dict.txt",
+        encoding="UTF-8")
+    return apply_model_to_test(input_batches, med_spellchecker_ru_roberta_no_space_handling)
 
 
-def med_spellchecker_distilbert_test(input_batches):
-    return apply_model_to_test(input_batches, med_spellchecker_ru_distilbert)
+def med_spellchecker_distilbert_test_no_space_handling(input_batches):
+    med_spellchecker_ru_distilbert_no_space_handling = MedSpellchecker(
+        candidate_ranker=RuDistilBertCandidateRanker(True),
+        words_list="../../../../data/dictionaries/processed/processed_lemmatized_all_dict.txt",
+        encoding="UTF-8")
+    return apply_model_to_test(input_batches, med_spellchecker_ru_distilbert_no_space_handling)
+
+
+def med_spellchecker_roberta_test_missing_space_handling(input_batches):
+    med_spellchecker_ru_roberta_missing_space_handling = MedSpellchecker(
+        candidate_ranker=RuRobertaCandidateRanker(True),
+        words_list="../../../../data/dictionaries/processed/processed_lemmatized_all_dict.txt",
+        encoding="UTF-8", handle_compound_words=True)
+    return apply_model_to_test(input_batches, med_spellchecker_ru_roberta_missing_space_handling)
+
+
+def med_spellchecker_distilbert_test_missing_space_handling(input_batches):
+    med_spellchecker_ru_distilbert_missing_space_handling = MedSpellchecker(
+        candidate_ranker=RuDistilBertCandidateRanker(True),
+        words_list="../../../../data/dictionaries/processed/processed_lemmatized_all_dict.txt",
+        encoding="UTF-8", handle_compound_words=True)
+    return apply_model_to_test(input_batches, med_spellchecker_ru_distilbert_missing_space_handling)
 
 
 def apply_model_to_test(input_batches, med_spellchecker):
@@ -34,8 +51,11 @@ def apply_model_to_test(input_batches, med_spellchecker):
 
 def run_test(spellchecker_function):
     metric_test_with_context = MetricTestWithContext()
-    test_med_spellchecker_result = metric_test_with_context.compute_all_metrics(ERROR_TYPE_TO_DATA_PATH_WITH_CONTEXT,
-                                                                                spellchecker_function)
+    test_med_spellchecker_result = metric_test_with_context.compute_all_metrics(
+        SIMPLE_ERROR_TYPE_TO_DATA_PATH_WITH_CONTEXT,
+        MISSING_SPACE_ERROR_TYPE_TO_DATA_PATH_WITH_CONTEXT,
+        EXTRA_SPACE_ERROR_TYPE_TO_DATA_PATH_WITH_CONTEXT,
+        spellchecker_function)
     return test_med_spellchecker_result
 
 
@@ -43,11 +63,19 @@ if __name__ == '__main__':
     """
     Run test with context for MedSpellchecker
     """
-    test_result_roberta = run_test(med_spellchecker_roberta_test)
+    test_result_roberta_no_space_handling = run_test(med_spellchecker_roberta_test_no_space_handling)
     print()
-    print("MedSpellChecker with RoBERTa")
-    print(test_result_roberta)
-    test_result_distilbert = run_test(med_spellchecker_distilbert_test)
+    print("MedSpellChecker with RoBERTa no space handling")
+    print(test_result_roberta_no_space_handling)
+    test_result_distilbert_no_space_handling = run_test(med_spellchecker_distilbert_test_no_space_handling)
     print()
-    print("MedSpellChecker with DistilBERT")
-    print(test_result_distilbert)
+    print("MedSpellChecker with DistilBERT no space handling")
+    print(test_result_distilbert_no_space_handling)
+    test_result_roberta_missing_space_handling = run_test(med_spellchecker_roberta_test_missing_space_handling)
+    print()
+    print("MedSpellChecker with RoBERTa missing space handling")
+    print(test_result_roberta_missing_space_handling)
+    test_result_distilbert_missing_space_handling = run_test(med_spellchecker_distilbert_test_missing_space_handling)
+    print()
+    print("MedSpellChecker with DistilBERT missing space handling")
+    print(test_result_distilbert_missing_space_handling)

@@ -2,7 +2,8 @@ from language_tool_python import LanguageTool
 from tqdm import tqdm
 
 from common.metric_test_with_context import MetricTestWithContext
-from other_spellcheckers.utils import ERROR_TYPE_TO_DATA_PATH_WITH_CONTEXT
+from other_spellcheckers.utils import SIMPLE_ERROR_TYPE_TO_DATA_PATH_WITH_CONTEXT, \
+    MISSING_SPACE_ERROR_TYPE_TO_DATA_PATH_WITH_CONTEXT, EXTRA_SPACE_ERROR_TYPE_TO_DATA_PATH_WITH_CONTEXT
 
 
 def language_tool_test(input_sentence):
@@ -16,7 +17,11 @@ def language_tool_test(input_sentence):
 
 def perform_test():
     metric_test_with_context = MetricTestWithContext()
-    return metric_test_with_context.compute_all_metrics(ERROR_TYPE_TO_DATA_PATH_WITH_CONTEXT, language_tool_test)
+    return metric_test_with_context.compute_all_metrics(
+        SIMPLE_ERROR_TYPE_TO_DATA_PATH_WITH_CONTEXT,
+        MISSING_SPACE_ERROR_TYPE_TO_DATA_PATH_WITH_CONTEXT,
+        EXTRA_SPACE_ERROR_TYPE_TO_DATA_PATH_WITH_CONTEXT,
+        language_tool_test)
 
 
 if __name__ == '__main__':

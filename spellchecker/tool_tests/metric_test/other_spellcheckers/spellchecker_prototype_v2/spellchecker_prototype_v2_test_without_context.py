@@ -10,7 +10,7 @@ def spellchecker_prototype_v2_test(input_word_list):
     word_list = " ".join(input_word_list)
     timer = tqdm()
     corrected_word_list = spellchecker_prototype.correct_words(word_list)
-    return {"elapsed": timer.format_dict["elapsed"], "corrected_word_list": corrected_word_list}
+    return timer.format_dict["elapsed"], corrected_word_list
 
 
 def perform_test():

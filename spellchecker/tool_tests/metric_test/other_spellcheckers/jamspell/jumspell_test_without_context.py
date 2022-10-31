@@ -16,7 +16,7 @@ def jumspell_test(input_word_list):
     for word in timer:
         suggestions = jamspell.FixFragment(word)
         result.append(suggestions)
-    return {"elapsed": timer.format_dict["elapsed"], "corrected_word_list": result}
+    return timer.format_dict["elapsed"], result
 
 
 def perform_test():

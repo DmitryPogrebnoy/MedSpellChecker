@@ -65,7 +65,7 @@ def yandex_speller_tool_test(input_word_list):
             else:
                 result.append(word)
 
-    return {"elapsed": timer, "corrected_word_list": result}
+    return timer, result
 
 
 def perform_test():

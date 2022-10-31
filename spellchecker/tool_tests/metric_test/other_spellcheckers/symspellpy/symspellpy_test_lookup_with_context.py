@@ -2,7 +2,8 @@ from symspellpy import SymSpell, Verbosity
 from tqdm import tqdm
 
 from common.metric_test_with_context import MetricTestWithContext
-from other_spellcheckers.utils import ERROR_TYPE_TO_DATA_PATH_WITH_CONTEXT
+from other_spellcheckers.utils import SIMPLE_ERROR_TYPE_TO_DATA_PATH_WITH_CONTEXT, \
+    MISSING_SPACE_ERROR_TYPE_TO_DATA_PATH_WITH_CONTEXT, EXTRA_SPACE_ERROR_TYPE_TO_DATA_PATH_WITH_CONTEXT
 
 basic_frequency_dict = '../../../../../data/other_spellcheckers/symspell/ru-100k.txt'
 
@@ -25,7 +26,9 @@ def symspell_py_lookup_test(frequency_dict_path, input_sentence):
 def perform_test():
     metric_test_with_context = MetricTestWithContext()
     return metric_test_with_context.compute_all_metrics(
-        ERROR_TYPE_TO_DATA_PATH_WITH_CONTEXT,
+        SIMPLE_ERROR_TYPE_TO_DATA_PATH_WITH_CONTEXT,
+        MISSING_SPACE_ERROR_TYPE_TO_DATA_PATH_WITH_CONTEXT,
+        EXTRA_SPACE_ERROR_TYPE_TO_DATA_PATH_WITH_CONTEXT,
         lambda x: symspell_py_lookup_test(basic_frequency_dict, x))
 
 

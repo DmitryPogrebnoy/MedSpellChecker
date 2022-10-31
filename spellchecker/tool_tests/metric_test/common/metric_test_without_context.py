@@ -4,10 +4,11 @@ from typing import final, List
 import pandas as pd
 from tabulate import tabulate
 
+from pre_post_processor import PreProcessor
+
 
 @final
 class MetricTestWithoutContext:
-
     WORD_PER_SECOND_KEY: str = "words_per_second"
     ERROR_PRECISION_KEY: str = "error_precision"
     LEXICAL_PRECISION_KEY: str = "lexical_precision"
@@ -23,7 +24,9 @@ class MetricTestWithoutContext:
 
     OVERALL_PRECISION_LABEL: str = "Overall"
 
-    def __init__(self, additional_info=False):
+    def __init__(self, ignore_lemmatization=True, additional_info=False):
+        self._ignore_lemmatization = ignore_lemmatization
+        self._pre_processor = PreProcessor()
         self.logger: logging.Logger = logging.getLogger()
         if additional_info:
             self.logger.setLevel(logging.INFO)
@@ -34,10 +37,11 @@ class MetricTestWithoutContext:
         self.logger.info("Error precision")
         self.logger.info("original_word_list --- corrected_word --- answer_word_list")
         for i, corrected_word in enumerate(corrected_word_list):
-            if corrected_word in answer_word_list[i]:
+            if corrected_word == answer_word_list[i]:
                 correct_words_number += 1
+                self.logger.info(f"CORRECT {original_word_list[i]} --- {corrected_word} --- {answer_word_list[i]}")
             else:
-                self.logger.info(f"{original_word_list[i]} --- {corrected_word} --- {answer_word_list[i]}")
+                self.logger.info(f"ERROR {original_word_list[i]} --- {corrected_word} --- {answer_word_list[i]}")
         self.logger.info(f"Right corrected words count - {correct_words_number} of {words_number} total")
         return correct_words_number / words_number
 
@@ -49,34 +53,29 @@ class MetricTestWithoutContext:
         for i, corrected_word in enumerate(corrected_word_list):
             if corrected_word == original_word_list[i]:
                 correct_words_number += 1
+                self.logger.info(f"CORRECT {original_word_list[i]} --- {corrected_word}")
             else:
-                self.logger.info(f"{original_word_list[i]} --- {corrected_word}")
+                self.logger.info(f"ERROR {original_word_list[i]} --- {corrected_word}")
         self.logger.info(f"Right corrected words count - {correct_words_number} of {words_number} total")
         return correct_words_number / words_number
 
-    # TODO: Rebuild datasets for tests in simple way and rewrite this method
-    def _load_data(self, error_path_to_data, lexical_path_to_data):
+    def _load_data(self, path_to_data):
         # Load word data for error precision test
         # Format - {word}{several spaces}{answer-words separeted by comma}
-        df = pd.read_csv(error_path_to_data)
+        df = pd.read_csv(path_to_data)
         error_word_list = df.incorrect_word
         error_answer_list = df.correct_word
 
-        # Load word list for lexical precision test
-        with open(lexical_path_to_data) as file:
-            lexical_word_list = [line.rstrip() for line in file.readlines()]
+        return error_word_list, error_answer_list, error_answer_list
 
-        return error_word_list, error_answer_list, lexical_word_list
-
-    def compute_all_metrics(self, error_type_to_data_path,
-                            error_precision_spellchecker_function, lexical_precision_spellchecker_function):
+    def compute_all_metrics(self, simple_test_data_path,
+                            error_precision_spellchecker_function,
+                            lexical_precision_spellchecker_function):
         table = []
 
-        for metric_name, path_to_data in error_type_to_data_path.items():
-            error_path_to_data, lexical_path_to_data = path_to_data
+        for metric_name, path_to_data in simple_test_data_path.items():
             # Load data
-            error_word_list, error_answer_list, lexical_word_list = self._load_data(
-                error_path_to_data, lexical_path_to_data)
+            error_word_list, error_answer_list, lexical_word_list = self._load_data(path_to_data)
             metric_result = self.compute_metric(error_word_list, error_answer_list, lexical_word_list,
                                                 error_precision_spellchecker_function,
                                                 lexical_precision_spellchecker_function)

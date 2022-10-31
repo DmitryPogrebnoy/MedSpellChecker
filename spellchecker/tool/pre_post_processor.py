@@ -32,10 +32,10 @@ class PreProcessor:
         return (not search("[^а-яА-Я]", token)) & (not token.isupper()) & (
             not token in self._stopwords)
 
-    def tokenize(self, string: str):
+    def tokenize(self, string: str) -> List[str]:
         return self._tokenizer.tokenize(string)
 
-    def lemmatize(self, string: str):
+    def lemmatize(self, string: str) -> str:
         return self._lemmatizer.parse(string)[0].normal_form
 
     def generate_words_from_tokens(self, tokens: List[str]) -> Generator[Word, None, None]:

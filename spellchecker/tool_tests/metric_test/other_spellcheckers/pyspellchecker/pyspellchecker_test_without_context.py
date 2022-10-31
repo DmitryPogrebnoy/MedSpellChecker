@@ -12,7 +12,7 @@ def pyspellchecker_tool_test(input_word_list):
     for word in timer:
         suggestions = speller.correction(word)
         result.append(suggestions)
-    return {"elapsed": timer.format_dict["elapsed"], "corrected_word_list": result}
+    return timer.format_dict["elapsed"], result
 
 
 def perform_test():

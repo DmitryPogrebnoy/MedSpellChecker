@@ -11,12 +11,12 @@ def language_tool_test(input_word_list):
     timer = tqdm(input_word_list)
     for word in timer:
         suggestions = tool.correct(word)
-        result.append(suggestions)
-    return {"elapsed": timer.format_dict["elapsed"], "corrected_word_list": result}
+        result.append(suggestions.lower())
+    return timer.format_dict["elapsed"], result
 
 
 def perform_test():
-    metric_test_without_context = MetricTestWithoutContext()
+    metric_test_without_context = MetricTestWithoutContext(True)
     return metric_test_without_context.compute_all_metrics(ERROR_TYPE_TO_DATA_PATH_WITHOUT_CONTEXT,
                                                            language_tool_test, language_tool_test)
 

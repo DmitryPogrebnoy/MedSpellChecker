@@ -15,7 +15,7 @@ def pyenchant_tool_test(input_word_list):
             result.append(word)
         else:
             result.append(suggestions[0])
-    return {"elapsed": timer.format_dict["elapsed"], "corrected_word_list": result}
+    return timer.format_dict["elapsed"], result
 
 
 def perform_test():

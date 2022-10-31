@@ -3,7 +3,8 @@ import json
 import requests
 
 from common.metric_test_with_context import MetricTestWithContext
-from other_spellcheckers.utils import ERROR_TYPE_TO_DATA_PATH_WITH_CONTEXT
+from other_spellcheckers.utils import SIMPLE_ERROR_TYPE_TO_DATA_PATH_WITH_CONTEXT, \
+    MISSING_SPACE_ERROR_TYPE_TO_DATA_PATH_WITH_CONTEXT, EXTRA_SPACE_ERROR_TYPE_TO_DATA_PATH_WITH_CONTEXT
 
 YANDEX_SPELLER_URL = 'https://speller.yandex.net/services/spellservice.json/checkTexts'
 MAX_CHARS_PER_REQUEST = 10_000
@@ -78,7 +79,11 @@ def yandex_speller_tool_test(input_batches):
 
 def perform_test():
     metric_test_with_context = MetricTestWithContext()
-    return metric_test_with_context.compute_all_metrics(ERROR_TYPE_TO_DATA_PATH_WITH_CONTEXT, yandex_speller_tool_test)
+    return metric_test_with_context.compute_all_metrics(
+        SIMPLE_ERROR_TYPE_TO_DATA_PATH_WITH_CONTEXT,
+        MISSING_SPACE_ERROR_TYPE_TO_DATA_PATH_WITH_CONTEXT,
+        EXTRA_SPACE_ERROR_TYPE_TO_DATA_PATH_WITH_CONTEXT,
+        yandex_speller_tool_test)
 
 
 if __name__ == '__main__':

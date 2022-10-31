@@ -16,7 +16,7 @@ def symspell_py_lookup_compound_test(frequency_dict_path, input_word_list):
     for word in timer:
         suggestions = sym_spell_py.lookup_compound(word, max_edit_distance=2)
         result.append(suggestions[0].term)
-    return {"elapsed" : timer.format_dict["elapsed"], "corrected_word_list" : result}
+    return timer.format_dict["elapsed"], result
 
 
 def perform_test():
