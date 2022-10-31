@@ -16,5 +16,5 @@ ERROR_TYPE_TO_DATA_PATH_WITHOUT_CONTEXT = {
     "Extra_character": '../../../../../data/test/without_context/data_extra_char_without_context.csv',
     "Shuffled_character": '../../../../../data/test/without_context/data_shuffled_char_without_context.csv',
     "Missing separator": '../../../../../data/test/without_context/data_missing_space_without_context.csv',
-    "Extra separator": '../../../../data/test/without_context/data_extra_space_without_context.csv'
+    "Extra separator": '../../../../../data/test/without_context/data_extra_space_without_context.csv'
 }
