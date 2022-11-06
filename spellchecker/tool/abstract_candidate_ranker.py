@@ -1,4 +1,3 @@
-import logging
 from abc import abstractmethod, ABC
 from typing import List, Optional, Tuple
 
@@ -9,12 +8,14 @@ from word import Word
 class AbstractCandidateRanker(ABC):
     @abstractmethod
     def prepare_text_for_prediction(self, current_word: Word,
-                                    all_correct_words: List[Word]) -> str:
+                                    correct_words_before: List[Word],
+                                    words_after: List[Word]) -> str:
         """Returns text prepared for prediction
 
             Args:
                 current_word: The words that need correction
-                all_correct_words: All correct words in texts
+                correct_words_before: correct words before current word
+                words_after: not processed yet words after current word
 
             Returns:
                 Text prepared for prediction
@@ -35,13 +36,15 @@ class AbstractCandidateRanker(ABC):
 
     @abstractmethod
     def rank_candidates(self, current_word: Word,
-                        all_correct_words: List[Word],
+                        correct_words_before: List[Word],
+                        words_after: List[Word],
                         candidates: List[CandidateWord]) -> List[CandidateWord]:
         """Returns ranked candidate words for correction
 
         Args:
             current_word: The words that need correction
-            all_correct_words: All correct words in texts
+            correct_words_before: correct words before current word
+            words_after: not processed yet words after current word
             candidates: Candidates for right word
 
         Returns:
@@ -49,26 +52,18 @@ class AbstractCandidateRanker(ABC):
         """
 
     @abstractmethod
-    def pick_most_suitable_candidate(self, current_word: Word,
-                                     all_correct_words: List[Word],
-                                     candidates: List[CandidateWord]) -> Optional[Tuple[CandidateWord, float]]:
+    def pick_top_candidate(self, current_word: Word,
+                           correct_words_before: List[Word],
+                           words_after: List[Word],
+                           candidates: List[CandidateWord]) -> Optional[Tuple[CandidateWord, float]]:
         """Returns most suitable candidate for fixing incorrect words
 
             Args:
                 current_word: The words that need correction
-                all_correct_words: All correct words in texts
+                correct_words_before: correct words before current word
+                words_after: not processed yet words after current word
                 candidates: Candidates for right word
 
             Returns:
                 Most suitable candidate and it's score
         """
-
-
-logger = logging.getLogger(__name__)
-
-
-def _pick_correct_word_form(word: Word) -> str:
-    if word.lemma_normal_form:
-        return word.lemma_normal_form
-    else:
-        return word.original_value

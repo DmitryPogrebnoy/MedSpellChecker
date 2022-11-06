@@ -11,6 +11,8 @@ from candidate_word import CandidateWord
 from gpu_utils import set_device
 from word import Word
 
+logger = logging.getLogger(__name__)
+
 
 class AbstractBertCandidateRanker(AbstractCandidateRanker):
 
@@ -35,11 +37,13 @@ class AbstractBertCandidateRanker(AbstractCandidateRanker):
         """
 
     def prepare_text_for_prediction(self, current_word: Word,
-                                    all_correct_words: List[Word]) -> str:
-        return ' '.join(map(
-            lambda x: _pick_correct_word_form(
-                x) if not x.position == current_word.position else self._tokenizer.mask_token,
-            all_correct_words))
+                                    correct_words_before: List[Word],
+                                    words_after: List[Word]) -> str:
+        str_before = ' '.join([word.corrected_value for word in correct_words_before])
+        str_word_token = self._tokenizer.mask_token
+        str_after = ' '.join([word.original_value for word in words_after])
+
+        return ' '.join([str_before, str_word_token, str_after])
 
     def predict_score(self, text_for_prediction: str,
                       candidate_value: str) -> Optional[float]:
@@ -70,7 +74,7 @@ class AbstractBertCandidateRanker(AbstractCandidateRanker):
         ## Mean score of candidate word parts
         candidate_score = 0.0
         for token in candidate_token_ids:
-            candidate_score += softmax_mask_token_logits[:, token][0]
+            candidate_score += softmax_mask_token_logits[:, token][0].item()
         candidate_score = candidate_score / len(candidate_token_ids)
         logger.debug(f"Candidate - {candidate_value}, score {candidate_score}")
         if self._use_treshold and candidate_score > self._treshold or not self._use_treshold:
@@ -87,7 +91,8 @@ class AbstractBertCandidateRanker(AbstractCandidateRanker):
             return None
 
     def rank_candidates(self, current_word: Word,
-                        all_correct_words: List[Word],
+                        correct_words_before: List[Word],
+                        words_after: List[Word],
                         candidates: List[CandidateWord]) -> List[CandidateWord]:
         if not candidates:
             return candidates
@@ -95,7 +100,7 @@ class AbstractBertCandidateRanker(AbstractCandidateRanker):
         # candidates must be ordered by edit distance
         candidates.sort(key=lambda x: x.distance)
 
-        text_for_prediction = self.prepare_text_for_prediction(current_word, all_correct_words)
+        text_for_prediction = self.prepare_text_for_prediction(current_word, correct_words_before, words_after)
 
         logger.debug(f"Text for prediction {text_for_prediction}")
 
@@ -110,16 +115,17 @@ class AbstractBertCandidateRanker(AbstractCandidateRanker):
         ranked_candidates = map(lambda x: x[0], ranked_candidate_score_pairs)
         return list(ranked_candidates)
 
-    def pick_most_suitable_candidate(self, current_word: Word,
-                                     all_correct_words: List[Word],
-                                     candidates: List[CandidateWord]) -> Optional[Tuple[CandidateWord, float]]:
+    def pick_top_candidate(self, current_word: Word,
+                           correct_words_before: List[Word],
+                           words_after: List[Word],
+                           candidates: List[CandidateWord]) -> Optional[Tuple[CandidateWord, float]]:
         if not candidates:
             return None
 
         # candidates must be ordered by edit distance
         candidates.sort(key=lambda x: x.distance)
 
-        text_for_prediction = self.prepare_text_for_prediction(current_word, all_correct_words)
+        text_for_prediction = self.prepare_text_for_prediction(current_word, correct_words_before, words_after)
 
         logger.debug(f"Text for prediction {text_for_prediction}")
 
@@ -140,13 +146,3 @@ class AbstractBertCandidateRanker(AbstractCandidateRanker):
             return ranked_candidate_score_pairs[0]
         else:
             return None
-
-
-logger = logging.getLogger(__name__)
-
-
-def _pick_correct_word_form(word: Word) -> str:
-    if word.lemma_normal_form:
-        return word.lemma_normal_form
-    else:
-        return word.original_value
