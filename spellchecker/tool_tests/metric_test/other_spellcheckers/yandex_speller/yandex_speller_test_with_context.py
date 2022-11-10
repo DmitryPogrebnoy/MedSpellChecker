@@ -1,13 +1,14 @@
 import json
 
 import requests
+import requests.adapters
 
 from common.metric_test_with_context import MetricTestWithContext
 from other_spellcheckers.utils import SIMPLE_ERROR_TYPE_TO_DATA_PATH_WITH_CONTEXT, \
     MISSING_SPACE_ERROR_TYPE_TO_DATA_PATH_WITH_CONTEXT, EXTRA_SPACE_ERROR_TYPE_TO_DATA_PATH_WITH_CONTEXT
 
 YANDEX_SPELLER_URL = 'https://speller.yandex.net/services/spellservice.json/checkTexts'
-MAX_CHARS_PER_REQUEST = 10_000
+MAX_CHARS_PER_REQUEST = 7_000
 LANG_PARAM_NAME = "lang"
 LANG_PARAM_VALUE = "ru"
 FORMAT_PARAM_NAME = "format"
@@ -47,16 +48,24 @@ def split_sentence_list_to_batches(sentence_list):
 
 
 def yandex_speller_tool_test(input_batches):
+    s = requests.Session()
+    retries = requests.adapters.Retry(total=20,
+                                      backoff_factor=1,
+                                      status_forcelist=[500, 502, 503, 504])
+
+    s.mount('https://', requests.adapters.HTTPAdapter(max_retries=retries))
+
     batches = split_sentence_list_to_batches(input_batches)
 
     result = []
     timer = 0.0
-    for batch in batches:
+    for idx, batch in enumerate(batches):
         params = {LANG_PARAM_NAME: LANG_PARAM_VALUE,
                   FORMAT_PARAM_NAME: FORMAT_PARAM_VALUE,
                   OPTIONS_PARAM_NAME: OPTIONS_PARAM_VALUE,
-                  TEXT_PARAM_NAME: ["+".join(sentence) for sentence in batch]}
-        response = requests.post(YANDEX_SPELLER_URL, data=params)
+                  TEXT_PARAM_NAME: ["+".join(sentence).replace(" ", "+") for sentence in batch]}
+        print(params[TEXT_PARAM_NAME])
+        response = s.post(YANDEX_SPELLER_URL, data=params)
         timer += response.elapsed.total_seconds()
         response.raise_for_status()
         corrected_batches = json.loads(response.text)
