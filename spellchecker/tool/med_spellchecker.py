@@ -59,10 +59,9 @@ class MedSpellchecker:
             first_word = self._pre_processor.lemmatize(word.original_value[:i])
             second_part = self._pre_processor.lemmatize(word.original_value[i:])
             if first_word in self.words and second_part in self.words:
-                prepared_text = self._candidate_ranker.prepare_text_for_prediction(word, valid_words_before,
-                                                                                   valid_words_after)
                 candidate_word = f"{first_word} {second_part}"
-                score = self._candidate_ranker.predict_score(prepared_text, candidate_word)
+                score = self._candidate_ranker.predict_score(word, valid_words_before, valid_words_after,
+                                                             candidate_word)
                 if score:
                     candidate_words.append((CandidateWord(candidate_word, 1), score))
         if candidate_words:

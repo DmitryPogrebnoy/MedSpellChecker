@@ -7,27 +7,16 @@ from word import Word
 
 class AbstractCandidateRanker(ABC):
     @abstractmethod
-    def prepare_text_for_prediction(self, current_word: Word,
-                                    correct_words_before: List[Word],
-                                    words_after: List[Word]) -> str:
-        """Returns text prepared for prediction
-
-            Args:
-                current_word: The words that need correction
-                correct_words_before: correct words before current word
-                words_after: not processed yet words after current word
-
-            Returns:
-                Text prepared for prediction
-        """
-
-    @abstractmethod
-    def predict_score(self, text_for_prediction: str,
+    def predict_score(self, current_word: Word,
+                      correct_words_before: List[Word],
+                      words_after: List[Word],
                       candidate_value: str) -> Optional[float]:
         """Returns score of candidate word
 
             Args:
-                text_for_prediction: Text for computing score
+                current_word: current word
+                correct_words_before: corrected words before
+                words_after: words after (not corrected yet)
                 candidate_value: Value for computing score
 
             Returns:
