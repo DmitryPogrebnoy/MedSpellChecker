@@ -21,7 +21,7 @@ def set_device() -> bool:
         logging.info(f"We will use device: CPU")
 
     try:
-        nvidia_output = subprocess.check_output("nvidia-smi")
+        nvidia_output = subprocess.check_output("nvidia-smi", shell=True)
         logging.info(nvidia_output)
     except subprocess.CalledProcessError:
         logging.info('Nvidia driver not installed')
