@@ -8,10 +8,10 @@ from accelerate import Accelerator
 from torch import IntTensor
 from transformers import AutoTokenizer, AutoModelForMaskedLM, PreTrainedTokenizer, PreTrainedModel
 
-from abstract_candidate_ranker import AbstractCandidateRanker
-from candidate_word import CandidateWord
-from gpu_utils import set_device
-from word import Word
+from .abstract_candidate_ranker import AbstractCandidateRanker
+from .candidate_word import CandidateWord
+from .gpu_utils import set_device
+from .word import Word
 
 logger = logging.getLogger(__name__)
 

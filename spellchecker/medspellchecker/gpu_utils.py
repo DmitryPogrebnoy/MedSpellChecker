@@ -1,5 +1,5 @@
 import logging
-import os
+import subprocess
 
 import numpy as np
 import pynvml
@@ -20,7 +20,10 @@ def set_device() -> bool:
         torch.device("cpu")
         logging.info(f"We will use device: CPU")
 
-    if os.system("nvidia-smi"):
+    try:
+        nvidia_output = subprocess.check_output("nvidia-smi")
+        logging.info(nvidia_output)
+    except subprocess.CalledProcessError:
         logging.info('Nvidia driver not installed')
         set_cpu_device()
         return False

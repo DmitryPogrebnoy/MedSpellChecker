@@ -1,7 +1,7 @@
 import logging
 from typing import final
 
-from abstract_bert_candidate_ranker import AbstractBertCandidateRanker
+from .abstract_bert_candidate_ranker import AbstractBertCandidateRanker
 
 logger = logging.getLogger(__name__)
 

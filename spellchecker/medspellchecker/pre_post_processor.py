@@ -7,7 +7,7 @@ from pymorphy2 import MorphAnalyzer
 from pymorphy2.analyzer import Parse
 from sacremoses import MosesTokenizer
 
-from word import Word
+from .word import Word
 
 
 @final

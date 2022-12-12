@@ -5,9 +5,9 @@ from collections import defaultdict
 from pathlib import Path
 from typing import final, Optional, IO, List, Union, Final, Set, Dict
 
-from candidate_word import CandidateWord
-from edit_distance import EditDistanceAlgo, EditDistance
-from word import Word
+from .candidate_word import CandidateWord
+from .edit_distance import EditDistanceAlgo, EditDistance
+from .word import Word
 
 logger = logging.getLogger(__name__)
 
