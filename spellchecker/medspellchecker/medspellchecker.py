@@ -5,13 +5,13 @@ from typing import final, List, Optional, Union, IO, Set, Tuple, Dict
 
 import numpy as np
 
-from .abstract_candidate_ranker import AbstractCandidateRanker
-from .candidate_generator import CandidateGenerator
-from .candidate_word import CandidateWord
-from .edit_distance import EditDistanceAlgo
-from .mistake_type import MistakeType
-from .pre_post_processor import PreProcessor
-from .word import Word
+from abstract_candidate_ranker import AbstractCandidateRanker
+from candidate_generator import CandidateGenerator
+from candidate_word import CandidateWord
+from edit_distance import EditDistanceAlgo
+from mistake_type import MistakeType
+from pre_post_processor import PreProcessor
+from word import Word
 
 logger = logging.getLogger(__name__)
 

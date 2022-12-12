@@ -1,6 +1,6 @@
 from collections import defaultdict
 
-from med_spellchecker import MedSpellchecker
+from medspellchecker import MedSpellchecker
 
 
 def test_delete_word_dict_by_one_word_list_1(spellchecker_by_one_word_list_1: MedSpellchecker):

@@ -4,7 +4,7 @@ import pytest
 
 from abstract_candidate_ranker import AbstractCandidateRanker
 from distilbert_candidate_ranker import RuDistilBertCandidateRanker
-from med_spellchecker import MedSpellchecker
+from medspellchecker import MedSpellchecker
 from roberta_candidate_ranker import RuRobertaCandidateRanker
 
 

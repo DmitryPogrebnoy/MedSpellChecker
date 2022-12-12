@@ -1,8 +1,8 @@
 from abc import abstractmethod, ABC
 from typing import List, Optional, Tuple
 
-from .candidate_word import CandidateWord
-from .word import Word
+from candidate_word import CandidateWord
+from word import Word
 
 
 class AbstractCandidateRanker(ABC):

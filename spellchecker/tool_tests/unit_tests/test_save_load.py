@@ -1,6 +1,6 @@
 from typing import List
 
-from med_spellchecker import MedSpellchecker
+from medspellchecker import MedSpellchecker
 from roberta_candidate_ranker import RuRobertaCandidateRanker
 
 
