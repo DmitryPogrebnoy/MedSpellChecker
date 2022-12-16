@@ -25,7 +25,7 @@ jobs:
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
       - name: Set PYTHONPATH
         run: |
-          echo "PYTHONPATH=$PYTHONPATH:${GITHUB_WORKSPACE}/medspellchecker/tool:${GITHUB_WORKSPACE}/medspellchecker/tool_tests/metric_test/common" >> $GITHUB_ENV
+          echo "PYTHONPATH=$PYTHONPATH:${GITHUB_WORKSPACE}/medspellchecker:${GITHUB_WORKSPACE}/medspellchecker/tool_tests/metric_test/common" >> $GITHUB_ENV
       - name: Test with pytest
         run: |
           python -m pytest
