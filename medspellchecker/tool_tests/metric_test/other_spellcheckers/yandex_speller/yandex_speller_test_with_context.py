@@ -9,7 +9,7 @@ from medspellchecker.tool_tests.metric_test.other_spellcheckers.utils import \
     MISSING_SPACE_ERROR_TYPE_TO_DATA_PATH_WITH_CONTEXT, EXTRA_SPACE_ERROR_TYPE_TO_DATA_PATH_WITH_CONTEXT
 
 YANDEX_SPELLER_URL = 'https://speller.yandex.net/services/spellservice.json/checkTexts'
-MAX_CHARS_PER_REQUEST = 7_000
+MAX_CHARS_PER_REQUEST = 9_000
 LANG_PARAM_NAME = "lang"
 LANG_PARAM_VALUE = "ru"
 FORMAT_PARAM_NAME = "format"
@@ -17,7 +17,6 @@ FORMAT_PARAM_VALUE = "plain"
 OPTIONS_PARAM_NAME = "options"
 OPTIONS_PARAM_VALUE = 518
 TEXT_PARAM_NAME = "text"
-
 
 def split_sentence_list_to_batches(sentence_list):
     if len(sentence_list) == 0:
@@ -49,6 +48,7 @@ def split_sentence_list_to_batches(sentence_list):
 
 
 def yandex_speller_tool_test(input_batches):
+    request_number = 0
     s = requests.Session()
     retries = requests.adapters.Retry(total=20,
                                       backoff_factor=1,
@@ -66,9 +66,16 @@ def yandex_speller_tool_test(input_batches):
                   OPTIONS_PARAM_NAME: OPTIONS_PARAM_VALUE,
                   TEXT_PARAM_NAME: ["+".join(sentence).replace(" ", "+") for sentence in batch]}
         print(params[TEXT_PARAM_NAME])
-        response = s.post(YANDEX_SPELLER_URL, data=params)
+        request_number += 1
+        print(request_number)
+
+        success_flag = False
+        while not success_flag:
+            print("Try to get response!")
+            response = helper(s, params)
+            if response is not None:
+                success_flag = True
         timer += response.elapsed.total_seconds()
-        response.raise_for_status()
         corrected_batches = json.loads(response.text)
 
         for idx_sentence, sentence in enumerate(batch):
@@ -85,6 +92,16 @@ def yandex_speller_tool_test(input_batches):
             result.append(corrected_sentence)
 
     return timer, result
+
+
+def helper(s, params):
+    try:
+        response = s.post(YANDEX_SPELLER_URL, data=params)
+        response.raise_for_status()
+    except:
+        return None
+
+    return response
 
 
 def perform_test():
