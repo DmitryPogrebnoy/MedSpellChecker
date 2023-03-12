@@ -5,7 +5,7 @@ from medspellchecker.tool.medspellchecker import MedSpellchecker
 from medspellchecker.tool.roberta_candidate_ranker import RuRobertaCandidateRanker
 from medspellchecker.tool.rubert_tiny2_candidate_ranker import RuBertTiny2CandidateRanker
 from medspellchecker.tool_tests.metric_test.common.metric_test_without_context import MetricTestWithoutContext
-from medspellchecker.tool_tests.metric_test.tool.utils import ERROR_TYPE_TO_DATA_PATH_WITHOUT_CONTEXT
+from medspellchecker.tool_tests.metric_test.utils import ERROR_TYPE_TO_DATA_PATH_WITHOUT_CONTEXT
 
 
 def med_spellchecker_roberta_no_space_handling_test(input_word_list):

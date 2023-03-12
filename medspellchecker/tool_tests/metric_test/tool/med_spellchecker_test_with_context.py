@@ -5,9 +5,8 @@ from medspellchecker.tool.medspellchecker import MedSpellchecker
 from medspellchecker.tool.roberta_candidate_ranker import RuRobertaCandidateRanker
 from medspellchecker.tool.rubert_tiny2_candidate_ranker import RuBertTiny2CandidateRanker
 from medspellchecker.tool_tests.metric_test.common.metric_test_with_context import MetricTestWithContext
-from medspellchecker.tool_tests.metric_test.tool.utils import SIMPLE_ERROR_TYPE_TO_DATA_PATH_WITH_CONTEXT, \
-    MISSING_SPACE_ERROR_TYPE_TO_DATA_PATH_WITH_CONTEXT, \
-    EXTRA_SPACE_ERROR_TYPE_TO_DATA_PATH_WITH_CONTEXT
+from medspellchecker.tool_tests.metric_test.utils import EXTRA_SPACE_ERROR_TYPE_TO_DATA_PATH_WITH_CONTEXT, \
+    MISSING_SPACE_ERROR_TYPE_TO_DATA_PATH_WITH_CONTEXT, SIMPLE_ERROR_TYPE_TO_DATA_PATH_WITH_CONTEXT
 
 
 def med_spellchecker_roberta_test_no_space_handling(input_batches):

@@ -2,7 +2,7 @@ from hunspell import HunSpell
 from tqdm import tqdm
 
 from medspellchecker.tool_tests.metric_test.common.metric_test_without_context import MetricTestWithoutContext
-from medspellchecker.tool_tests.metric_test.other_spellcheckers.utils import ERROR_TYPE_TO_DATA_PATH_WITHOUT_CONTEXT
+from medspellchecker.tool_tests.metric_test.utils import ERROR_TYPE_TO_DATA_PATH_WITHOUT_CONTEXT
 
 hunspell_dic = '../../../../../data/other_spellcheckers/hunspell/index.dic'
 hunspell_aff = '../../../../../data/other_spellcheckers/hunspell/index.aff'

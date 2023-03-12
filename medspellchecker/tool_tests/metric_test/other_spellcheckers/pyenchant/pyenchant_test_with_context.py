@@ -2,9 +2,8 @@ import enchant
 from tqdm import tqdm
 
 from medspellchecker.tool_tests.metric_test.common.metric_test_with_context import MetricTestWithContext
-from medspellchecker.tool_tests.metric_test.other_spellcheckers.utils import \
-    SIMPLE_ERROR_TYPE_TO_DATA_PATH_WITH_CONTEXT, \
-    MISSING_SPACE_ERROR_TYPE_TO_DATA_PATH_WITH_CONTEXT, EXTRA_SPACE_ERROR_TYPE_TO_DATA_PATH_WITH_CONTEXT
+from medspellchecker.tool_tests.metric_test.utils import EXTRA_SPACE_ERROR_TYPE_TO_DATA_PATH_WITH_CONTEXT, \
+    MISSING_SPACE_ERROR_TYPE_TO_DATA_PATH_WITH_CONTEXT, SIMPLE_ERROR_TYPE_TO_DATA_PATH_WITH_CONTEXT
 
 
 def pyenchant_tool_test(input_sentence):

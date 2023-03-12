@@ -1,7 +1,7 @@
 from tqdm import tqdm
 
 from medspellchecker.tool_tests.metric_test.common.metric_test_without_context import MetricTestWithoutContext
-from medspellchecker.tool_tests.metric_test.other_spellcheckers.utils import ERROR_TYPE_TO_DATA_PATH_WITHOUT_CONTEXT
+from medspellchecker.tool_tests.metric_test.utils import ERROR_TYPE_TO_DATA_PATH_WITHOUT_CONTEXT
 from spellchecker_prototype_v2.spell_checker import SpellChecker
 
 
