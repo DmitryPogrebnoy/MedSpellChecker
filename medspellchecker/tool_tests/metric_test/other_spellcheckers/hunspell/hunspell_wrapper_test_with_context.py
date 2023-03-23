@@ -36,7 +36,7 @@ def perform_test():
 
 if __name__ == '__main__':
     """
-    Run test without context for Hunspell wrapper (hunspell package)
+    Run test with context for Hunspell wrapper (hunspell package)
 
     Firstly you need to install libhunspell-dev, hunspell and hunspell-ru (sudo apt-get libhunspell-dev hunspell hunspell-ru)
     """

@@ -1,18 +1,18 @@
+from collections import Counter
 import math
 import random
-from collections import Counter
 
+from accelerate import Accelerator
+from datasets import Dataset, DatasetDict
+from gpu_utils import print_gpu_memory_stats, set_device
 import numpy as np
 import pandas as pd
 import torch
-from accelerate import Accelerator
-from datasets import Dataset, DatasetDict
-from gpu_utils import set_device, print_gpu_memory_stats
 from torch.optim import AdamW
 from torch.utils.data.dataloader import DataLoader
 from tqdm.auto import tqdm
-from transformers import AutoModelForMaskedLM, AutoTokenizer, TrainingArguments, DataCollatorForLanguageModeling, \
-    set_seed
+from transformers import AutoModelForMaskedLM, AutoTokenizer, DataCollatorForLanguageModeling, set_seed, \
+    TrainingArguments
 
 MODEL_CHECKPOINT = "sberbank-ai/ruRoberta-large"
 PATH_TO_PREPROCESSED_ANAMNESIS = "../../../../data/anamnesis/processed/all_anamnesis.csv"
@@ -53,6 +53,7 @@ def setup_random():
     torch.manual_seed(random_state)
     torch.cuda.manual_seed(random_state)
     set_seed(random_state)
+    np.random.seed(random_state)
 
 
 def check_tokenizer_behaviour(tokenizer):
