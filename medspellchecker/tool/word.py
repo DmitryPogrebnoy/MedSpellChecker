@@ -20,3 +20,9 @@ class Word:
     lemma_normal_form: Optional[str] = None
     lemma_tag: Optional[str] = None
     corrected_value: Optional[str] = None
+
+    def get_lemma_normal_or_original_form(self):
+        if self.lemma_normal_form:
+            return self.lemma_normal_form
+        else:
+            return self.original_value

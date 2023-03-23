@@ -1,5 +1,5 @@
 from re import search
-from typing import final, Final, List, Generator
+from typing import final, Final, Generator, List
 
 from nltk import download
 from nltk.corpus import stopwords
@@ -22,15 +22,15 @@ class PreProcessor:
         download(PreProcessor._stopwords_download_name, quiet=True)
         self._stopwords: Final[List[str]] = stopwords.words('russian')
 
-    def _is_valid_token(self, token: str) -> bool:
+    def is_valid_token(self, token: str) -> bool:
         """Checks if the correction token is valid.
 
         The token must not contain punctuation marks or other symbols,
         otherwise we cannot fix it correctly. And also all the letters together in the token are not capitalized -
         this is to exclude the correction of various abbreviations that are written with capital letters.
         """
-        return (not search("[^а-яА-Я]", token)) & (not token.isupper()) & (
-            not token in self._stopwords)
+        return (not search("[^а-яА-Я]", token)) and (not token.isupper()) and (
+            not token in self._stopwords) and (len(token) > 3)
 
     def tokenize(self, string: str) -> List[str]:
         return self._tokenizer.tokenize(string)
@@ -40,7 +40,7 @@ class PreProcessor:
 
     def generate_words_from_tokens(self, tokens: List[str]) -> Generator[Word, None, None]:
         for id, token in enumerate(tokens):
-            is_valid = self._is_valid_token(token)
+            is_valid = self.is_valid_token(token)
             if is_valid:
                 # if the token is valid for correction, extract a lemma from it
                 parse: Parse = self._lemmatizer.parse(token)[0]

@@ -1,7 +1,7 @@
 import logging
 import os
 from pathlib import Path
-from typing import final, List, Optional, Union, IO, Set, Tuple, Dict
+from typing import Dict, final, IO, List, Optional, Set, Tuple, Union
 
 import numpy as np
 from pkg_resources import resource_filename
@@ -58,14 +58,17 @@ class MedSpellchecker:
                                           valid_words_after: List[Word]) -> Optional[Tuple[CandidateWord, float]]:
         candidate_words = []
         for i in range(len(word.original_value)):
-            first_word = self._pre_processor.lemmatize(word.original_value[:i])
+            first_part = self._pre_processor.lemmatize(word.original_value[:i])
             second_part = self._pre_processor.lemmatize(word.original_value[i:])
-            if first_word in self.words and second_part in self.words:
-                candidate_word = f"{first_word} {second_part}"
-                score = self._candidate_ranker.predict_score(word, valid_words_before, valid_words_after,
-                                                             candidate_word)
-                if score:
-                    candidate_words.append((CandidateWord(candidate_word, 1), score))
+            if first_part in self.words and second_part in self.words:
+                candidate_word = f"{first_part} {second_part}"
+                # TODO:Add context
+                first_score = self._candidate_ranker.predict_score(word, valid_words_before, valid_words_after,
+                                                                   first_part)
+                second_score = self._candidate_ranker.predict_score(word, valid_words_before, valid_words_after,
+                                                                    second_part)
+                if first_score and second_score:
+                    candidate_words.append((CandidateWord(candidate_word, 1), (first_score + second_score) / 2))
         if candidate_words:
             candidate_words.sort(key=lambda x: x[1])
             return candidate_words[0]
@@ -87,7 +90,8 @@ class MedSpellchecker:
         while current_word_idx < len(words):
             current_word = words[current_word_idx]
 
-            if not current_word.should_correct or current_word.original_value in self.words:
+            if (not current_word.should_correct) or (current_word.original_value in self.words) or \
+                    (current_word.lemma_normal_form in self.words):
                 current_word.corrected_value = current_word.original_value
                 current_word_idx += 1
                 continue
@@ -95,87 +99,112 @@ class MedSpellchecker:
             valid_words_before: List[Word] = [word for word in words[:current_word_idx] if word.should_correct]
             valid_words_after: List[Word] = [word for word in words[current_word_idx + 1:] if word.should_correct]
 
+            mistake_type_to_candidate: Dict[MistakeType, Tuple[CandidateWord, float]] = {}
+
+            # Compute score of original word
+            original_word_score = self._candidate_ranker.predict_score(
+                current_word, valid_words_before, valid_words_after, current_word.get_lemma_normal_or_original_form())
+
             # Consider non-spacing types of mistakes
             # Generate list of candidates for fix
             single_candidates_list: List[CandidateWord] = self._candidate_generator.generate_fixing_candidates(
-                current_word)
+                current_word, include_unknown=False)
             top_single_word_candidate_pair: Optional[Tuple[CandidateWord, float]] = \
                 self._candidate_ranker.pick_top_candidate(current_word, valid_words_before,
                                                           valid_words_after, single_candidates_list)
+            if top_single_word_candidate_pair:
+                mistake_type_to_candidate[MistakeType.SINGLE_WORD_MISTAKE] = top_single_word_candidate_pair
 
             # If we shouldn't handle spacing mistakes then that's it
-            if not self._handle_compound_words:
-                if top_single_word_candidate_pair:
-                    current_word.corrected_value = top_single_word_candidate_pair[0].value
-                else:
-                    current_word.corrected_value = current_word.original_value
+            if self._handle_compound_words:
+                # Else we need to process handle cases
+                # Consider missing space mistake
+                top_split_candidate_pair: Optional[Tuple[CandidateWord, float]] = \
+                    self._pick_top_missing_space_candidate(current_word, valid_words_before, valid_words_after)
+                if top_split_candidate_pair:
+                    mistake_type_to_candidate[MistakeType.MISSING_SPACE_MISTAKE] = top_split_candidate_pair
+
+                # Consider extra space mistake
+                compound_word: Optional[Word] = self._create_compound_word(current_word_idx, current_word, words)
+                top_extra_space_candidate_pair: Optional[Tuple[CandidateWord, float]] = \
+                    self._get_top_extra_space_candidate(compound_word, valid_words_before, valid_words_after)
+                if top_extra_space_candidate_pair:
+                    mistake_type_to_candidate[MistakeType.EXTRA_SPACE_MISTAKE] = top_extra_space_candidate_pair
+
+            # Early skip
+            if not mistake_type_to_candidate:
+                current_word.corrected_value = current_word.get_lemma_normal_or_original_form()
                 current_word_idx += 1
                 continue
-
-            # Else we need to process handle cases, but first of all create candidate dict
-            candidate_by_types: Dict[MistakeType, Tuple[CandidateWord, float]] = {}
-            if top_single_word_candidate_pair:
-                candidate_by_types[MistakeType.SINGLE_WORD_MISTAKE] = top_single_word_candidate_pair
-
-            # Consider missing space mistake
-            top_split_candidate_pair: Optional[Tuple[CandidateWord, float]] = \
-                self._pick_top_missing_space_candidate(current_word, valid_words_before, valid_words_after)
-            if top_split_candidate_pair:
-                candidate_by_types[MistakeType.MISSING_SPACE_MISTAKE] = top_split_candidate_pair
-
-            # Consider extra space mistake
-            new_word: Optional[Word] = None
-            if current_word_idx + 1 < len(words):
-                next_word: Word = words[current_word_idx + 1]
-                new_word_str: str = current_word.original_value + next_word.original_value
-                new_word: Word = next(self._pre_processor.generate_words_from_tokens([new_word_str]))
-                if new_word.should_correct and new_word.original_value in self.words:
-                    extra_space_candidate: CandidateWord = CandidateWord(new_word_str, 1)
-                    top_extra_space_candidate_pair: Optional[Tuple[CandidateWord, float]] = \
-                        self._candidate_ranker.pick_top_candidate(
-                            new_word, valid_words_before, valid_words_after[1:], [extra_space_candidate])
-                    if top_extra_space_candidate_pair:
-                        candidate_by_types[MistakeType.EXTRA_SPACE_MISTAKE] = top_extra_space_candidate_pair
 
             # Now we have collected all possible candidates. So let's pick most suitable one
-            candidate_by_types_list: List[Tuple[MistakeType, Tuple[CandidateWord, float]]] = \
-                list(candidate_by_types.items())
-
-            if not candidate_by_types_list:
-                current_word.corrected_value = current_word.original_value
-                current_word_idx += 1
-                continue
-
-            min_distance_candidate = min(candidate_by_types_list, key=lambda x: x[1][0].distance)
-            filtered_candidate_by_types_list: List[Tuple[MistakeType, Tuple[CandidateWord, float]]] = \
-                list(filter(lambda x: x[1][0].distance == min_distance_candidate[1][0].distance,
-                            candidate_by_types_list))
-            candidate_scores: List[float] = list(map(lambda x: x[1][1], filtered_candidate_by_types_list))
-            top_candidate_idx: int = np.argmax(candidate_scores)
             top_candidate: Tuple[MistakeType, Tuple[CandidateWord, float]] = \
-                filtered_candidate_by_types_list[top_candidate_idx]
-
-            top_candidate_type: MistakeType = top_candidate[0]
-            top_candidate_word: CandidateWord = top_candidate[1][0]
-
-            if top_candidate_type == MistakeType.SINGLE_WORD_MISTAKE:
-                current_word.corrected_value = top_candidate_word.value
-                current_word_idx += 1
-                continue
-            elif top_candidate_type == MistakeType.MISSING_SPACE_MISTAKE:
-                # Here we didn't create two separate words due to the performance reasons
-                current_word.corrected_value = top_candidate_word.value
-                current_word_idx += 1
-                continue
-            elif top_candidate_type == MistakeType.EXTRA_SPACE_MISTAKE:
-                del words[current_word_idx + 1]
-                new_word.corrected_value = top_candidate_word.value
-                words[current_word_idx] = new_word
-                current_word_idx += 1
-                continue
-
-            current_word.corrected_value = current_word.original_value
+                self._find_top_candidate(mistake_type_to_candidate)
+            self._fix_word_by_top_candidate(
+                top_candidate,
+                original_word_score,
+                current_word,
+                current_word_idx,
+                words,
+                compound_word
+            )
             current_word_idx += 1
 
         corrected_text = ' '.join(map(lambda word: word.corrected_value, words))
         return corrected_text
+
+    def _create_compound_word(self, current_word_idx: int, current_word: Word, words: List[Word]) -> Optional[Word]:
+        if current_word_idx + 1 < len(words):
+            next_word: Word = words[current_word_idx + 1]
+            new_word_str: str = current_word.original_value + next_word.original_value
+            new_word: Word = next(self._pre_processor.generate_words_from_tokens([new_word_str]))
+            return new_word
+        return None
+
+    def _get_top_extra_space_candidate(self, compound_word: Optional[Word],
+                                       valid_words_before: List[Word],
+                                       valid_words_after: List[Word]) -> Optional[Tuple[CandidateWord, float]]:
+        if compound_word and compound_word.should_correct and compound_word.get_lemma_normal_or_original_form() in self.words:
+            extra_space_candidate: CandidateWord = CandidateWord(compound_word.get_lemma_normal_or_original_form(), 1)
+            top_extra_space_candidate_pair: Optional[Tuple[CandidateWord, float]] = \
+                self._candidate_ranker.pick_top_candidate(
+                    compound_word, valid_words_before, valid_words_after[1:], [extra_space_candidate])
+            return top_extra_space_candidate_pair
+        return None
+
+    def _fix_word_by_top_candidate(self,
+                                   top_candidate: Tuple[MistakeType, Tuple[CandidateWord, float]],
+                                   original_word_score: float,
+                                   current_word: Word,
+                                   current_word_idx: int,
+                                   words: List[Word],
+                                   compound_word: Optional[Word]):
+        top_candidate_type: MistakeType = top_candidate[0]
+        top_candidate_word: CandidateWord = top_candidate[1][0]
+        top_candidate_score: float = top_candidate[1][1]
+
+        if original_word_score < top_candidate_score:
+            if top_candidate_type == MistakeType.SINGLE_WORD_MISTAKE:
+                current_word.corrected_value = top_candidate_word.value
+                return
+            elif self._handle_compound_words:
+                if top_candidate_type == MistakeType.MISSING_SPACE_MISTAKE:
+                    # Here we didn't create two separate words due to the performance reasons
+                    current_word.corrected_value = top_candidate_word.value
+                    return
+                elif top_candidate_type == MistakeType.EXTRA_SPACE_MISTAKE:
+                    del words[current_word_idx + 1]
+                    compound_word.corrected_value = top_candidate_word.value
+                    words[current_word_idx] = compound_word
+                    return
+
+        current_word.corrected_value = current_word.get_lemma_normal_or_original_form()
+
+    def _find_top_candidate(self, mistake_type_to_candidate: Dict[MistakeType, Tuple[CandidateWord, float]]) \
+            -> Tuple[MistakeType, Tuple[CandidateWord, float]]:
+        mistake_type_candidate_list: List[Tuple[MistakeType, Tuple[CandidateWord, float]]] = \
+            list(mistake_type_to_candidate.items())
+
+        candidate_scores: List[float] = list(map(lambda x: x[1][1], mistake_type_candidate_list))
+        top_candidate_idx: int = np.argmax(candidate_scores)
+        return mistake_type_candidate_list[top_candidate_idx]
