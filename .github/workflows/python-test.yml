@@ -28,4 +28,4 @@ jobs:
           echo "PYTHONPATH=$PYTHONPATH:${GITHUB_WORKSPACE}/medspellchecker:${GITHUB_WORKSPACE}/medspellchecker/tool_tests/metric_test/common" >> $GITHUB_ENV
       - name: Test with pytest
         run: |
-          python -m pytest ./medspellchecker/tool_tests/unit_test
+          python -m pytest ./medspellchecker/tool_tests/unit_tests
