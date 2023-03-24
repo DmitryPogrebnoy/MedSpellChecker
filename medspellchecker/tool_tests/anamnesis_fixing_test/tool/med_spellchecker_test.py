@@ -11,7 +11,7 @@ from medspellchecker.tool_tests.anamnesis_fixing_test.common.anamnesis_fixing_te
 
 def med_spellchecker_roberta_test_missing_space_handling(input_batches):
     med_spellchecker_ru_roberta_missing_space_handling = MedSpellchecker(
-        candidate_ranker=RuRobertaCandidateRanker(True),
+        candidate_ranker=RuRobertaCandidateRanker(False),
         words_list="../../../../data/dictionaries/processed/processed_lemmatized_all_dict.txt",
         encoding="UTF-8", handle_compound_words=True)
     return apply_model_to_test(input_batches, med_spellchecker_ru_roberta_missing_space_handling)
@@ -21,7 +21,7 @@ def med_spellchecker_distilbert_test_missing_space_handling(input_batches):
     med_spellchecker_ru_distilbert_missing_space_handling = MedSpellchecker(
         candidate_ranker=RuDistilBertCandidateRanker(False),
         words_list="../../../../data/dictionaries/processed/processed_lemmatized_all_dict.txt",
-        encoding="UTF-8", handle_compound_words=False)
+        encoding="UTF-8", handle_compound_words=True)
     return apply_model_to_test(input_batches, med_spellchecker_ru_distilbert_missing_space_handling)
 
 

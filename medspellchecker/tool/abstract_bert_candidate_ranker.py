@@ -1,12 +1,13 @@
+from abc import abstractmethod
+import dataclasses
 import itertools
 import logging
-from abc import abstractmethod
 from typing import List, Optional, Tuple
 
-import torch
 from accelerate import Accelerator
+import torch
 from torch import IntTensor
-from transformers import AutoTokenizer, AutoModelForMaskedLM, PreTrainedTokenizer, PreTrainedModel
+from transformers import AutoModelForMaskedLM, AutoTokenizer, PreTrainedModel, PreTrainedTokenizer
 
 from medspellchecker.tool.abstract_candidate_ranker import AbstractCandidateRanker
 from medspellchecker.tool.candidate_word import CandidateWord
@@ -62,10 +63,8 @@ class AbstractBertCandidateRanker(AbstractCandidateRanker):
             results.append((patched_input_ids, patched_attention_mask))
         return results
 
-    def predict_score(self, current_word: Word,
-                      correct_words_before: List[Word],
-                      words_after: List[Word],
-                      candidate_value: str) -> Optional[float]:
+    def predict_score(self, correct_words_before: List[Word], words_after: List[Word], candidate_value: str) -> \
+            Optional[float]:
         text_with_mask = self.prepare_text_for_prediction(correct_words_before, words_after)
         candidate_token_ids = self._tokenizer.encode(candidate_value, add_special_tokens=False)
         logger.debug(f"Candidate token ids: {candidate_token_ids}")
@@ -106,16 +105,6 @@ class AbstractBertCandidateRanker(AbstractCandidateRanker):
         else:
             return None
 
-    def _process_candidates(self, current_word: Word,
-                            correct_words_before: List[Word],
-                            words_after: List[Word],
-                            candidate: CandidateWord) -> Optional[Tuple[CandidateWord, float]]:
-        candidate_score = self.predict_score(current_word, correct_words_before, words_after, candidate.value)
-        if candidate_score:
-            return candidate, candidate_score
-        else:
-            return None
-
     def rank_candidates(self, current_word: Word,
                         correct_words_before: List[Word],
                         words_after: List[Word],
@@ -129,10 +118,9 @@ class AbstractBertCandidateRanker(AbstractCandidateRanker):
         candidate_score_pairs = []
 
         for candidate in candidates:
-            processed_candidate_score = self._process_candidates(current_word, correct_words_before, words_after,
-                                                                 candidate)
-            if processed_candidate_score:
-                candidate_score_pairs.append(processed_candidate_score)
+            candidate_score = self.predict_score(correct_words_before, words_after, candidate.value)
+            if candidate_score:
+                candidate_score_pairs.append((candidate, candidate_score))
 
         ranked_candidate_score_pairs = sorted(candidate_score_pairs, key=lambda x: x[1])
         ranked_candidates = map(lambda x: x[0], ranked_candidate_score_pairs)
@@ -149,17 +137,42 @@ class AbstractBertCandidateRanker(AbstractCandidateRanker):
         candidates.sort(key=lambda x: x.distance)
 
         candidate_score_pairs = []
-        previous_edit_distance_candidate = candidates[0].distance
+        candidates = list(filter(lambda x: x.distance == candidates[0].distance, candidates))
 
         for candidate in candidates:
-            if candidate.distance > previous_edit_distance_candidate:
-                break
+            candidate_score = self.predict_score(correct_words_before, words_after, candidate.value)
+            if candidate_score:
+                candidate_score_pairs.append((candidate, candidate_score))
 
-            processed_candidate_score = self._process_candidates(current_word, correct_words_before, words_after,
-                                                                 candidate)
-            if processed_candidate_score:
-                candidate_score_pairs.append(processed_candidate_score)
-                previous_edit_distance_candidate = candidate.distance
+        if candidate_score_pairs:
+            ranked_candidate_score_pairs = sorted(candidate_score_pairs, key=lambda x: x[1])
+            return ranked_candidate_score_pairs[0]
+        else:
+            return None
+
+    def pick_top_candidate_with_next_word(self, current_word: Word,
+                                          next_word_str: str,
+                                          correct_words_before: List[Word],
+                                          words_after: List[Word],
+                                          candidates: List[CandidateWord]) -> Optional[Tuple[CandidateWord, float]]:
+        if not candidates:
+            return None
+
+        # candidates must be ordered by edit distance
+        candidates.sort(key=lambda x: x.distance)
+
+        candidate_score_pairs = []
+        candidates = list(filter(lambda x: x.distance == candidates[0].distance, candidates))
+
+        for candidate in candidates:
+            candidate_score = self.predict_score(correct_words_before, words_after, candidate.value)
+            corrected_current_word = dataclasses.replace(current_word)
+            corrected_current_word.corrected_value = candidate.value
+            before = correct_words_before + [corrected_current_word]
+            after = words_after[1:]
+            next_word_score = self.predict_score(before, after, next_word_str)
+            if candidate_score and next_word_score:
+                candidate_score_pairs.append((candidate, (candidate_score + next_word_score) / 2))
 
         if candidate_score_pairs:
             ranked_candidate_score_pairs = sorted(candidate_score_pairs, key=lambda x: x[1])

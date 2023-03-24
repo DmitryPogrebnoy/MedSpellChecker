@@ -62,11 +62,18 @@ class MedSpellchecker:
             second_part = self._pre_processor.lemmatize(word.original_value[i:])
             if first_part in self.words and second_part in self.words:
                 candidate_word = f"{first_part} {second_part}"
-                # TODO:Add context
-                first_score = self._candidate_ranker.predict_score(word, valid_words_before, valid_words_after,
-                                                                   first_part)
-                second_score = self._candidate_ranker.predict_score(word, valid_words_before, valid_words_after,
-                                                                    second_part)
+                first_word: Word = Word(word.position, first_part, True, corrected_value=first_part)
+                second_word: Word = Word(word.position, second_part, True, corrected_value=second_part)
+                first_score = self._candidate_ranker.predict_score(
+                    valid_words_before,
+                    [second_word] + valid_words_after,
+                    first_part
+                )
+                second_score = self._candidate_ranker.predict_score(
+                    valid_words_before + [first_word],
+                    valid_words_after,
+                    second_part
+                )
                 if first_score and second_score:
                     candidate_words.append((CandidateWord(candidate_word, 1), (first_score + second_score) / 2))
         if candidate_words:
@@ -102,27 +109,18 @@ class MedSpellchecker:
             mistake_type_to_candidate: Dict[MistakeType, Tuple[CandidateWord, float]] = {}
 
             # Compute score of original word
-            original_word_score = self._candidate_ranker.predict_score(
-                current_word, valid_words_before, valid_words_after, current_word.get_lemma_normal_or_original_form())
-
-            # Consider non-spacing types of mistakes
-            # Generate list of candidates for fix
-            single_candidates_list: List[CandidateWord] = self._candidate_generator.generate_fixing_candidates(
-                current_word, include_unknown=False)
-            top_single_word_candidate_pair: Optional[Tuple[CandidateWord, float]] = \
-                self._candidate_ranker.pick_top_candidate(current_word, valid_words_before,
-                                                          valid_words_after, single_candidates_list)
-            if top_single_word_candidate_pair:
-                mistake_type_to_candidate[MistakeType.SINGLE_WORD_MISTAKE] = top_single_word_candidate_pair
+            original_word_score = self._candidate_ranker.predict_score(valid_words_before, valid_words_after,
+                                                                       current_word.get_lemma_normal_or_original_form())
 
             # If we shouldn't handle spacing mistakes then that's it
             if self._handle_compound_words:
                 # Else we need to process handle cases
                 # Consider missing space mistake
-                top_split_candidate_pair: Optional[Tuple[CandidateWord, float]] = \
-                    self._pick_top_missing_space_candidate(current_word, valid_words_before, valid_words_after)
-                if top_split_candidate_pair:
-                    mistake_type_to_candidate[MistakeType.MISSING_SPACE_MISTAKE] = top_split_candidate_pair
+                if len(current_word.get_lemma_normal_or_original_form()) > 3:
+                    top_split_candidate_pair: Optional[Tuple[CandidateWord, float]] = \
+                        self._pick_top_missing_space_candidate(current_word, valid_words_before, valid_words_after)
+                    if top_split_candidate_pair:
+                        mistake_type_to_candidate[MistakeType.MISSING_SPACE_MISTAKE] = top_split_candidate_pair
 
                 # Consider extra space mistake
                 compound_word: Optional[Word] = self._create_compound_word(current_word_idx, current_word, words)
@@ -130,6 +128,30 @@ class MedSpellchecker:
                     self._get_top_extra_space_candidate(compound_word, valid_words_before, valid_words_after)
                 if top_extra_space_candidate_pair:
                     mistake_type_to_candidate[MistakeType.EXTRA_SPACE_MISTAKE] = top_extra_space_candidate_pair
+            else:
+                compound_word = None
+
+            # Consider non-spacing types of mistakes
+            # Generate list of candidates for fix
+            if len(current_word.get_lemma_normal_or_original_form()) > 3:
+                single_candidates_list: List[CandidateWord] = self._candidate_generator.generate_fixing_candidates(
+                    current_word, include_unknown=False)
+
+                if self._handle_compound_words and current_word_idx + 1 < len(words):
+                    top_single_word_candidate_pair: Optional[Tuple[CandidateWord, float]] = \
+                        self._candidate_ranker.pick_top_candidate_with_next_word(
+                            current_word,
+                            words[current_word_idx + 1].get_lemma_normal_or_original_form(),
+                            valid_words_before,
+                            valid_words_after,
+                            single_candidates_list
+                        )
+                else:
+                    top_single_word_candidate_pair: Optional[Tuple[CandidateWord, float]] = \
+                        self._candidate_ranker.pick_top_candidate(current_word, valid_words_before,
+                                                                  valid_words_after, single_candidates_list)
+                if top_single_word_candidate_pair:
+                    mistake_type_to_candidate[MistakeType.SINGLE_WORD_MISTAKE] = top_single_word_candidate_pair
 
             # Early skip
             if not mistake_type_to_candidate:

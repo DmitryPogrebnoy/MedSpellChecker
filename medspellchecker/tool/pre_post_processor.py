@@ -30,7 +30,7 @@ class PreProcessor:
         this is to exclude the correction of various abbreviations that are written with capital letters.
         """
         return (not search("[^а-яА-Я]", token)) and (not token.isupper()) and (
-            not token in self._stopwords) and (len(token) > 3)
+            not token in self._stopwords)
 
     def tokenize(self, string: str) -> List[str]:
         return self._tokenizer.tokenize(string)

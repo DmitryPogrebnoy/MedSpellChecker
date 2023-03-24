@@ -1,6 +1,6 @@
-import logging
 from difflib import SequenceMatcher
-from typing import final, List, Dict
+import logging
+from typing import Dict, final, List
 
 import pandas as pd
 from tabulate import tabulate
@@ -246,6 +246,12 @@ class MetricTestWithContext:
             incorrect_pos = incorrect_word_pos_data[i]
 
             opcodes = SequenceMatcher(None, answer, corrected_batch).get_opcodes()
+            # if opcodes:
+            #     print()
+            #     print(original_data[i])
+            #     print(f"{corrected_batch}")
+            #     print(answer)
+            #     print()
             for tag, answer_idx_1, answer_idx_2, corrected_inx_1, corrected_inx_2 in opcodes:
                 if tag == "equal":
                     if incorrect_pos in range(answer_idx_1, answer_idx_2):
