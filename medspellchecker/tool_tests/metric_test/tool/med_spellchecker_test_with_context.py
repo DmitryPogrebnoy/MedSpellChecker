@@ -144,10 +144,10 @@ if __name__ == '__main__':
     # print("MedSpellChecker with RoBERTa space handling")
     # print(test_result_roberta_space_handling)
 
-    # test_result_distilbert_space_handling = run_test(med_spellchecker_distilbert_test_missing_space_handling)
-    # print()
-    # print("MedSpellChecker with DistilBERT space handling")
-    # print(test_result_distilbert_space_handling)
+    test_result_distilbert_space_handling = run_test(med_spellchecker_distilbert_test_missing_space_handling)
+    print()
+    print("MedSpellChecker with DistilBERT space handling")
+    print(test_result_distilbert_space_handling)
 
     test_result_rubert_tiny2_space_handling = run_test(med_spellchecker_rubert_tiny2_test_missing_space_handling)
     print()

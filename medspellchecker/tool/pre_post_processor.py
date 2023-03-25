@@ -44,7 +44,10 @@ class PreProcessor:
             if is_valid:
                 # if the token is valid for correction, extract a lemma from it
                 parse: Parse = self._lemmatizer.parse(token)[0]
-                yield Word(id, token, is_valid, parse.normal_form, parse.tag)
+                if parse.is_known:
+                    yield Word(id, token, is_valid, parse.normal_form, parse.tag)
+                else:
+                    yield Word(id, token, is_valid)
             else:
                 # else just set corrected_value as original token
                 yield Word(id, token, is_valid, corrected_value=token)
