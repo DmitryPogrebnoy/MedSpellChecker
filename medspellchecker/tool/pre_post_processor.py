@@ -32,6 +32,15 @@ class PreProcessor:
         return (not search("[^а-яА-Я]", token)) and (not token.isupper()) and (
             not token in self._stopwords)
 
+    def _is_proper_name(self, token: str, token_id: int, tokens: List[str]) -> bool:
+        if token_id == 0:
+            return False
+
+        previous_token_id: int = token_id - 1
+        previous_token: str = tokens[previous_token_id]
+
+        return (not previous_token.endswith(".")) and token[0].isupper()
+
     def tokenize(self, string: str) -> List[str]:
         return self._tokenizer.tokenize(string)
 
@@ -41,13 +50,14 @@ class PreProcessor:
     def generate_words_from_tokens(self, tokens: List[str]) -> Generator[Word, None, None]:
         for id, token in enumerate(tokens):
             is_valid = self.is_valid_token(token)
-            if is_valid:
+            is_proper_name = self._is_proper_name(token, id, tokens)
+            if is_valid and not is_proper_name:
                 # if the token is valid for correction, extract a lemma from it
                 parse: Parse = self._lemmatizer.parse(token)[0]
                 if parse.is_known:
-                    yield Word(id, token, is_valid, parse.normal_form, parse.tag)
+                    yield Word(id, token, True, parse.normal_form, parse.tag)
                 else:
-                    yield Word(id, token, is_valid)
+                    yield Word(id, token, True)
             else:
                 # else just set corrected_value as original token
-                yield Word(id, token, is_valid, corrected_value=token)
+                yield Word(id, token, False, corrected_value=token)
