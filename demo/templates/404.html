@@ -1,0 +1,27 @@
+{% extends 'bootstrap/base.html' %}
+
+{% block title %}
+404 Error - Page Not Found
+{% endblock %}
+
+
+{% block content %}
+
+<div class="container">
+    <div class="row">
+        <div class="col-md-10 col-lg-8 mx-lg-auto mx-md-auto">
+
+            <h1 class="pt-5 pb-2">Page not found (Error 404)</h1>
+
+            <h5>Logs</h5>
+            <p class="lead">
+                {{ logs }}
+            </p>
+
+            <p><a href="{{ url_for('/') }}">Go to start page</a></p>
+
+        </div>
+    </div>
+</div>
+
+{% endblock %}

@@ -18,4 +18,11 @@
   <component name="PackageRequirementsSettings">
     <option name="removeUnused" value="true" />
   </component>
+  <component name="TemplatesService">
+    <option name="TEMPLATE_FOLDERS">
+      <list>
+        <option value="$MODULE_DIR$/demo/templates" />
+      </list>
+    </option>
+  </component>
 </module>
