@@ -11,17 +11,23 @@ This project is under active development and is gradually improving.
 
 ## Demo
 
-Tool demo is not yet ready and will be added later.
+Here is an example of how to correct a spelling mistake with MedSpellChecker.
+
+![Demo](https://github.com/DmitryPogrebnoy/MedSpellChecker/blob/main/presentation_materials/readme/demo/demo_correct_message.gif)
+
+Steps for reproducing the demo:
+
+1. Clone the project
+2. Install all requirements
+3. Go to `demo` folder
+3. Run demo Flask server
+4. Open demo website and enjoy!
 
 ## Supported errors
 
 **MedSpellChecker** supports fixing the following types of errors.
 
 ![Supported errors](https://github.com/DmitryPogrebnoy/MedSpellChecker/blob/main/presentation_materials/figures/misspelling_types.drawio.png)
-
-For now, skip and extra space handling is in the prototype stage and may not work or
-may significantly affect performance.
-Other types of errors are handled stably well.
 
 ## Internals
 
