@@ -13,7 +13,7 @@ from medspellchecker.tool_tests.metric_test.utils import EXTRA_SPACE_ERROR_TYPE_
 
 def med_spellchecker_roberta_test_no_space_handling(input_batches):
     med_spellchecker_ru_roberta_no_space_handling = MedSpellchecker(
-        candidate_ranker=RuRobertaCandidateRanker(True),
+        candidate_ranker=RuRobertaCandidateRanker(False),
         words_list="../../../../data/dictionaries/processed/processed_lemmatized_all_dict.txt",
         encoding="UTF-8")
     return apply_model_to_test(input_batches, med_spellchecker_ru_roberta_no_space_handling)
@@ -21,7 +21,7 @@ def med_spellchecker_roberta_test_no_space_handling(input_batches):
 
 def med_spellchecker_distilbert_test_no_space_handling(input_batches):
     med_spellchecker_ru_distilbert_no_space_handling = MedSpellchecker(
-        candidate_ranker=RuDistilBertCandidateRanker(True),
+        candidate_ranker=RuDistilBertCandidateRanker(False),
         words_list="../../../../data/dictionaries/processed/processed_lemmatized_all_dict.txt",
         encoding="UTF-8")
     return apply_model_to_test(input_batches, med_spellchecker_ru_distilbert_no_space_handling)
@@ -29,7 +29,7 @@ def med_spellchecker_distilbert_test_no_space_handling(input_batches):
 
 def med_spellchecker_rubert_tiny2_test_no_space_handling(input_batches):
     med_spellchecker_rubert_tiny2_no_space_handling = MedSpellchecker(
-        candidate_ranker=RuBertTiny2CandidateRanker(True),
+        candidate_ranker=RuBertTiny2CandidateRanker(False),
         words_list="../../../../data/dictionaries/processed/processed_lemmatized_all_dict.txt",
         encoding="UTF-8")
     return apply_model_to_test(input_batches, med_spellchecker_rubert_tiny2_no_space_handling)
@@ -53,7 +53,7 @@ def med_spellchecker_rubiorobert_test_no_space_handling(input_batches):
 
 def med_spellchecker_roberta_test_missing_space_handling(input_batches):
     med_spellchecker_ru_roberta_missing_space_handling = MedSpellchecker(
-        candidate_ranker=RuRobertaCandidateRanker(True),
+        candidate_ranker=RuRobertaCandidateRanker(False),
         words_list="../../../../data/dictionaries/processed/processed_lemmatized_all_dict.txt",
         encoding="UTF-8", handle_compound_words=True)
     return apply_model_to_test(input_batches, med_spellchecker_ru_roberta_missing_space_handling)
@@ -139,20 +139,20 @@ if __name__ == '__main__':
     # print("MedSpellChecker with RuBioRoBerta no space handling")
     # print(test_result_rubioroberta_no_space_handling)
 
-    # test_result_roberta_space_handling = run_test(med_spellchecker_roberta_test_missing_space_handling)
+    test_result_roberta_space_handling = run_test(med_spellchecker_roberta_test_missing_space_handling)
+    print()
+    print("MedSpellChecker with RoBERTa space handling")
+    print(test_result_roberta_space_handling)
+
+    # test_result_distilbert_space_handling = run_test(med_spellchecker_distilbert_test_missing_space_handling)
     # print()
-    # print("MedSpellChecker with RoBERTa space handling")
-    # print(test_result_roberta_space_handling)
-
-    test_result_distilbert_space_handling = run_test(med_spellchecker_distilbert_test_missing_space_handling)
-    print()
-    print("MedSpellChecker with DistilBERT space handling")
-    print(test_result_distilbert_space_handling)
-
-    test_result_rubert_tiny2_space_handling = run_test(med_spellchecker_rubert_tiny2_test_missing_space_handling)
-    print()
-    print("MedSpellChecker with RuBertTiny2 space handling")
-    print(test_result_rubert_tiny2_space_handling)
+    # print("MedSpellChecker with DistilBERT space handling")
+    # print(test_result_distilbert_space_handling)
+    #
+    # test_result_rubert_tiny2_space_handling = run_test(med_spellchecker_rubert_tiny2_test_missing_space_handling)
+    # print()
+    # print("MedSpellChecker with RuBertTiny2 space handling")
+    # print(test_result_rubert_tiny2_space_handling)
 
     # test_result_rubiobert_space_handling = run_test(med_spellchecker_rubiobert_test_missing_space_handling)
     # print()

@@ -5,6 +5,7 @@ from typing import Dict, final, IO, List, Optional, Set, Tuple, Union
 
 import numpy as np
 from pkg_resources import resource_filename
+from pymorphy2.tagset import OpencorporaTag
 
 from medspellchecker.tool.abstract_candidate_ranker import AbstractCandidateRanker
 from medspellchecker.tool.candidate_generator import CandidateGenerator
@@ -58,27 +59,42 @@ class MedSpellchecker:
                                           valid_words_after: List[Word]) -> Optional[Tuple[CandidateWord, float]]:
         candidate_words = []
         for i in range(len(word.original_value)):
-            first_part = self._pre_processor.lemmatize(word.original_value[:i])
-            second_part = self._pre_processor.lemmatize(word.original_value[i:])
-            if first_part in self.words and second_part in self.words:
-                candidate_word = f"{first_part} {second_part}"
-                first_word: Word = Word(word.position, first_part, True, corrected_value=first_part)
-                second_word: Word = Word(word.position, second_part, True, corrected_value=second_part)
+            first_part: Tuple[str, OpencorporaTag] = self._pre_processor.lemmatize_and_tag(word.original_value[:i])
+            second_part: Tuple[str, OpencorporaTag] = self._pre_processor.lemmatize_and_tag(word.original_value[i:])
+            if first_part[0] in self.words and second_part[0] in self.words:
+                candidate_word = f"{first_part[0]} {second_part[0]}"
+                first_word: Word = Word(word.position, first_part[0], True, corrected_value=first_part[0])
+                second_word: Word = Word(word.position, second_part[0], True, corrected_value=second_part[0])
                 first_score = self._candidate_ranker.predict_score(
                     valid_words_before,
                     [second_word] + valid_words_after,
-                    first_part
+                    first_part[0]
                 )
                 second_score = self._candidate_ranker.predict_score(
                     valid_words_before + [first_word],
                     valid_words_after,
-                    second_part
+                    second_part[0]
                 )
                 if first_score and second_score:
-                    candidate_words.append((CandidateWord(candidate_word, 1), (first_score + second_score) / 2))
+                    candidate_words.append(
+                        (CandidateWord(candidate_word, 1),
+                         (first_score + second_score) / 2,
+                         first_part[1],
+                         second_part[1])
+                    )
         if candidate_words:
             candidate_words.sort(key=lambda x: x[1])
-            return candidate_words[0]
+            best_candidate_word_tuple = candidate_words[0]
+            best_candidate_word_split = best_candidate_word_tuple[0].value.split()
+            best_candidate_word_part_first: str = best_candidate_word_split[0]
+            best_candidate_word_part_second: str = best_candidate_word_split[1]
+
+            restored_first_part: str = self._pre_processor.str_restore_original_form(
+                best_candidate_word_part_first, best_candidate_word_tuple[2])
+            restored_second_part: str = self._pre_processor.str_restore_original_form(
+                best_candidate_word_part_second, best_candidate_word_tuple[3])
+
+            return CandidateWord(f"{restored_first_part} {restored_second_part}", 1), best_candidate_word_tuple[1]
         else:
             return None
 
@@ -109,8 +125,11 @@ class MedSpellchecker:
             mistake_type_to_candidate: Dict[MistakeType, Tuple[CandidateWord, float]] = {}
 
             # Compute score of original word
-            original_word_score = self._candidate_ranker.predict_score(valid_words_before, valid_words_after,
-                                                                       current_word.get_lemma_normal_or_original_form())
+            original_word_score: Optional[float] = self._candidate_ranker.predict_score(
+                valid_words_before, valid_words_after, current_word.get_lemma_normal_or_original_form())
+
+            if original_word_score is None:
+                original_word_score = 1.0
 
             # If we shouldn't handle spacing mistakes then that's it
             if self._handle_compound_words:
@@ -172,7 +191,7 @@ class MedSpellchecker:
             )
             current_word_idx += 1
 
-        corrected_text = ' '.join(map(lambda word: word.corrected_value, words))
+        corrected_text = self._build_result_text(words)
         return corrected_text
 
     def _create_compound_word(self, current_word_idx: int, current_word: Word, words: List[Word]) -> Optional[Word]:
@@ -230,3 +249,7 @@ class MedSpellchecker:
         candidate_scores: List[float] = list(map(lambda x: x[1][1], mistake_type_candidate_list))
         top_candidate_idx: int = np.argmax(candidate_scores)
         return mistake_type_candidate_list[top_candidate_idx]
+
+    def _build_result_text(self, words: List[Word]) -> str:
+        result_list = [self._pre_processor.word_restore_original_form(word) for word in words]
+        return ' '.join(result_list)

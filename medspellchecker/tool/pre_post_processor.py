@@ -1,10 +1,12 @@
 from re import search
-from typing import final, Final, Generator, List
+from typing import final, Final, Generator, List, Optional, Tuple
 
 from nltk import download
 from nltk.corpus import stopwords
 from pymorphy2 import MorphAnalyzer
 from pymorphy2.analyzer import Parse
+from pymorphy2.shapes import restore_capitalization
+from pymorphy2.tagset import OpencorporaTag
 from sacremoses import MosesTokenizer
 
 from medspellchecker.tool.word import Word
@@ -47,6 +49,10 @@ class PreProcessor:
     def lemmatize(self, string: str) -> str:
         return self._lemmatizer.parse(string)[0].normal_form
 
+    def lemmatize_and_tag(self, string: str) -> Tuple[str, OpencorporaTag]:
+        parse = self._lemmatizer.parse(string)[0]
+        return (parse.normal_form, parse.tag)
+
     def generate_words_from_tokens(self, tokens: List[str]) -> Generator[Word, None, None]:
         for id, token in enumerate(tokens):
             is_valid = self.is_valid_token(token)
@@ -55,9 +61,39 @@ class PreProcessor:
                 # if the token is valid for correction, extract a lemma from it
                 parse: Parse = self._lemmatizer.parse(token)[0]
                 if parse.is_known:
-                    yield Word(id, token, True, parse.normal_form, parse.tag)
+                    yield Word(id, token, True, parse.normal_form, parse.tag, parse.lexeme)
                 else:
                     yield Word(id, token, True)
             else:
                 # else just set corrected_value as original token
                 yield Word(id, token, False, corrected_value=token)
+
+    def str_restore_original_form(self, word: str, tag: OpencorporaTag):
+        result_lexeme: Parse = self._restore_original_form(word, tag)
+
+        if result_lexeme:
+            return result_lexeme.word
+        else:
+            return word
+
+    def word_restore_original_form(self, word: Word) -> Optional[str]:
+        if (not word.should_correct) or (word.lexeme is None) or (word.lemma_tag is None):
+            return word.corrected_value
+
+        filtered_lexeme = self._restore_original_form(word.corrected_value, word.lemma_tag)
+
+        if filtered_lexeme:
+            return restore_capitalization(filtered_lexeme.word, word.original_value)
+        else:
+            return restore_capitalization(word.corrected_value, word.original_value)
+
+    def _restore_original_form(self, corrected_word: str, tag: OpencorporaTag) -> Optional[Parse]:
+        corrected_word_lexeme = self._lemmatizer.parse(corrected_word)[0].lexeme
+        filtered_lexeme = list(filter(
+            lambda parse: (parse.tag == tag) and (parse.word[0] == corrected_word[0]),
+            corrected_word_lexeme)
+        )
+        if filtered_lexeme:
+            return filtered_lexeme[0]
+        else:
+            return None

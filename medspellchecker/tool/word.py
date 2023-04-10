@@ -1,5 +1,8 @@
 from dataclasses import dataclass
-from typing import final, Optional
+from typing import final, List, Optional
+
+from pymorphy2.analyzer import Parse
+from pymorphy2.tagset import OpencorporaTag
 
 
 @final
@@ -18,7 +21,8 @@ class Word:
     original_value: str
     should_correct: bool
     lemma_normal_form: Optional[str] = None
-    lemma_tag: Optional[str] = None
+    lemma_tag: Optional[OpencorporaTag] = None
+    lexeme: Optional[List[Parse]] = None
     corrected_value: Optional[str] = None
 
     def get_lemma_normal_or_original_form(self):

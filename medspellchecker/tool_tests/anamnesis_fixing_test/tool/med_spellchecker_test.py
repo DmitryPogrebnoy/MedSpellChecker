@@ -62,13 +62,13 @@ if __name__ == '__main__':
     """
     Run test for MedSpellchecker
     """
-    perform_anamnesis_fixing_test(med_spellchecker_roberta_test_missing_space_handling,
-                                  "medspellchecker_roberta_fix.csv")
+    # perform_anamnesis_fixing_test(med_spellchecker_roberta_test_missing_space_handling,
+    #                               "medspellchecker_roberta_fix.csv")
     perform_anamnesis_fixing_test(med_spellchecker_distilbert_test_missing_space_handling,
                                   "medspellchecker_distilbert_fix.csv")
     perform_anamnesis_fixing_test(med_spellchecker_rubert_tiny2_test_missing_space_handling,
                                   "medspellchecker_rubert_tiny2_fix.csv")
-    perform_anamnesis_fixing_test(med_spellchecker_rubiobert_test_missing_space_handling,
-                                  "medspellchecker_rubiobert_fix.csv")
-    perform_anamnesis_fixing_test(med_spellchecker_rubiorobert_test_missing_space_handling,
-                                  "medspellchecker_rubiorobert_fix.csv")
+    # perform_anamnesis_fixing_test(med_spellchecker_rubiobert_test_missing_space_handling,
+    #                               "medspellchecker_rubiobert_fix.csv")
+    # perform_anamnesis_fixing_test(med_spellchecker_rubiorobert_test_missing_space_handling,
+    #                               "medspellchecker_rubiorobert_fix.csv")
