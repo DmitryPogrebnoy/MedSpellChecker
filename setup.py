@@ -1,6 +1,6 @@
 import pathlib
 
-from setuptools import setup, find_packages
+from setuptools import find_packages, setup
 
 here = pathlib.Path(__file__).parent.resolve()
 
@@ -11,7 +11,7 @@ print(find_packages(where='spellchecker'))
 
 setup(
     name='medspellchecker',
-    version='0.0.1',
+    version='0.0.2',
     description='Fast and effective spellchecker for Russian medical texts',
     long_description=long_description,
     long_description_content_type='text/markdown',
