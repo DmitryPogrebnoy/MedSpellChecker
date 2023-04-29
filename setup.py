@@ -1,17 +1,15 @@
 import pathlib
 
-from setuptools import find_packages, setup
+from setuptools import setup
 
 here = pathlib.Path(__file__).parent.resolve()
-
+print(here / 'PACKAGE.md')
 # Get the long description from the README file
-long_description = (here / 'README.md').read_text(encoding='utf-8')
-
-print(find_packages(where='spellchecker'))
+long_description = (here / 'PACKAGE.md').read_text(encoding='utf-8')
 
 setup(
     name='medspellchecker',
-    version='0.0.2',
+    version='0.0.3',
     description='Fast and effective spellchecker for Russian medical texts',
     long_description=long_description,
     long_description_content_type='text/markdown',
