@@ -51,7 +51,7 @@ fixed_text = spellchecker.fix_text(
 )
 
 print(fixed_text)
-# -> "У больной диагностировать инфаркт и тубркулез"
+# -> "У больного диагностирован инфаркт и туберкулез"
 ```
 
 1) The first two lines import the main class of the package.
@@ -59,7 +59,7 @@ print(fixed_text)
 3) Line 6 creates an instance of the candidate ranking class based on the fine-tuned DistilBert model.
 4) Line 7 creates an instance of the class to correct spelling errors.
 5) On line 8, the `fix_text` method is called, which takes the raw text and returns the corrected text.
-6) Finally line 10 prints the corrected result, which looks like "У больной диагностировать инфаркт и тубркулез".
+6) Finally line 10 prints the corrected result, which looks like "У больного диагностирован инфаркт и туберкулез".
 7) In this way, the package can be used to correct spelling errors in Russian medical texts in a few lines.
 
 ### Tips for using the tool
