@@ -9,7 +9,7 @@ long_description = (here / 'PACKAGE.md').read_text(encoding='utf-8')
 
 setup(
     name='medspellchecker',
-    version='0.0.3',
+    version='0.0.4',
     description='Fast and effective spellchecker for Russian medical texts',
     long_description=long_description,
     long_description_content_type='text/markdown',
