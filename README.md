@@ -11,6 +11,10 @@ The tool takes the raw medical text and returns the corrected text in lemmatized
 This project is in its final stages.
 If you have found a bug or would like to improve something, please create an issue or pull request.
 
+The developed tool and obtained results were presented at the International Conference on Computational Science 2023 (
+ICCS 2023).
+The paper presented can be accessed at the [link](https://link.springer.com/chapter/10.1007/978-3-031-36024-4_16)
+
 ## How to install
 
 The project is written in Python 3.9 and works on Python version 3.9 or higher.
@@ -138,6 +142,6 @@ Available rankers out of the box:
 ## More information
 
 This project is part of master's thesis. The current state is the result of the first year of work.
-More details about **MedSpellCHecker** you can find in the text of the
-[term report](https://github.com/DmitryPogrebnoy/MedSpellChecker/blob/main/presentation_materials/pre_pre_defense/Dmitry_Pogrebnoy_pre_pre_defence.pdf)
+More details about **MedSpellChecker** you can find in the text of the
+[term report](https://github.com/DmitryPogrebnoy/MedSpellChecker/blob/main/presentation_materials/defense/Pogrebnoy_Dmitry_defence.pdf)
 .
