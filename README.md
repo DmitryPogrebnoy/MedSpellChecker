@@ -143,5 +143,31 @@ Available rankers out of the box:
 
 This project is part of master's thesis. The current state is the result of the first year of work.
 More details about **MedSpellChecker** you can find in the text of the
-[term report](https://github.com/DmitryPogrebnoy/MedSpellChecker/blob/main/presentation_materials/defense/Pogrebnoy_Dmitry_defence.pdf)
-.
+[term report](https://github.com/DmitryPogrebnoy/MedSpellChecker/blob/main/presentation_materials/defense/Pogrebnoy_Dmitry_defence.pdf).
+
+## Citation
+
+If you find MedSpellChecker useful for your work, please cite the following papers:
+
+```
+@InProceedings{10.1007/978-3-031-36024-4_16,
+author="Pogrebnoi, Dmitrii
+and Funkner, Anastasia
+and Kovalchuk, Sergey",
+editor="Miky{\v{s}}ka, Ji{\v{r}}{\'i}
+and de Mulatier, Cl{\'e}lia
+and Paszynski, Maciej
+and Krzhizhanovskaya, Valeria V.
+and Dongarra, Jack J.
+and Sloot, Peter M.A.",
+title="RuMedSpellchecker: Correcting Spelling Errors for Natural Russian Language in Electronic Health Records Using Machine Learning Techniques",
+booktitle="Computational Science -- ICCS 2023",
+year="2023",
+publisher="Springer Nature Switzerland",
+address="Cham",
+pages="213--227",
+abstract="The incredible advances in machine learning have created a variety of predictive and decision-making medical models that greatly improve the efficacy of treatment and improve the quality of care. In healthcare, such models are often based on electronic health records (EHRs). The quality of this models depends on the quality of the EHRs, which are usually presented as plain unstructured text. Such records often contain spelling errors, which reduce the quality of intelligent systems based on them. In this paper we present a method and tool for correcting spelling errors in medical texts in Russian. By combining the Symmetrical Deletion algorithm and a finely tuned BERT model to correct spelling errors, the tool can improve the quality of original medical texts without significant cost. We have evaluated the correction precision and performance of the presented tool and compared it with other popular spelling error correction tools that support Russian language. Experiments have shown that the presented approach and tool are 7{\%} superior to existing open-source tools for automatically correcting spelling errors in Russian medical texts. The proposed tool and its source code are available on GitHub{\$}{\$}^{\{}1{\}}{\$}{\$}1and pip{\$}{\$}^{\{}2{\}}{\$}{\$}2repositories({\$}{\$}^1{\$}{\$}1https://github.com/DmitryPogrebnoy/MedSpellChecker{\$}{\$}^{\{}2{\}}{\$}{\$}2https://pypi.org/project/medspellchecker).",
+isbn="978-3-031-36024-4"
+}
+```
+
