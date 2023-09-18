@@ -51,11 +51,11 @@ from medspellchecker.tool.distilbert_candidate_ranker import RuDistilBertCandida
 candidate_ranker = RuDistilBertCandidateRanker()
 spellchecker = MedSpellchecker(candidate_ranker)
 fixed_text = spellchecker.fix_text(
-    "У больногодиагностирован инфркт и тубркулез"
+    "тревожное растройство (золофт) и атопичекий дермтит"
 )
 
 print(fixed_text)
-# -> "У больного диагностирован инфаркт и туберкулез"
+# -> "тревожное расстройство ( золофт ) и атопический дерматит"
 ```
 
 1) The first two lines import the main class of the package.
