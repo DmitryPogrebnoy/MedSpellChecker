@@ -1,6 +1,7 @@
 from tqdm import tqdm
 
 from medspellchecker.tool.distilbert_candidate_ranker import RuDistilBertCandidateRanker
+from medspellchecker.tool.mdeberta_v3_candidate_ranker import MDebertaV3CandidateRanker
 from medspellchecker.tool.medspellchecker import MedSpellchecker
 from medspellchecker.tool.roberta_candidate_ranker import RuRobertaCandidateRanker
 from medspellchecker.tool.rubert_tiny2_candidate_ranker import RuBertTiny2CandidateRanker
@@ -58,6 +59,14 @@ def med_spellchecker_rubert_tiny2_missing_space_handling_test(input_word_list):
     return apply_spellchecker_to_test_data(input_word_list, med_spellchecker_rubert_tiny2_missing_space_handling)
 
 
+def med_spellchecker_mdeberta_v3_missing_space_handling_test(input_word_list):
+    med_spellchecker_mdeberta_v3_missing_space_handling = MedSpellchecker(
+        candidate_ranker=MDebertaV3CandidateRanker(False),
+        words_list="../../../../data/dictionaries/processed/processed_lemmatized_all_dict.txt",
+        encoding="UTF-8", handle_compound_words=True)
+    return apply_spellchecker_to_test_data(input_word_list, med_spellchecker_mdeberta_v3_missing_space_handling)
+
+
 def med_spellchecker_rubioroberta_missing_space_handling_test(input_word_list):
     med_spellchecker_rubert_tiny2_missing_space_handling = MedSpellchecker(
         candidate_ranker=RuBioRobertCandidateRanker(False),
@@ -112,36 +121,43 @@ if __name__ == '__main__':
     # print()
     # print("MedSpellChecker with RuBertTiny2 no space handling")
     # print(test_result_rubert_tiny2_)
+    #
+    # test_result_roberta_missing_space_handling = run_test(med_spellchecker_roberta_missing_space_handling_test,
+    #                                                       med_spellchecker_roberta_missing_space_handling_test)
+    # print()
+    # print("MedSpellChecker with RoBERTa space handling")
+    # print(test_result_roberta_missing_space_handling)
+    #
+    # test_result_distilbert_missing_space_handling = run_test(med_spellchecker_distilbert_missing_space_handling_test,
+    #                                                          med_spellchecker_distilbert_missing_space_handling_test)
+    # print()
+    # print("MedSpellChecker with DistilBERT space handling")
+    # print(test_result_distilbert_missing_space_handling)
+    #
+    # test_result_rubert_tiny2_missing_space_handling = run_test(
+    #     med_spellchecker_rubert_tiny2_missing_space_handling_test,
+    #     med_spellchecker_rubert_tiny2_missing_space_handling_test)
+    # print()
+    # print("MedSpellChecker with RuBertTiny2 space handling")
+    # print(test_result_rubert_tiny2_missing_space_handling)
 
-    test_result_roberta_missing_space_handling = run_test(med_spellchecker_roberta_missing_space_handling_test,
-                                                          med_spellchecker_roberta_missing_space_handling_test)
+    test_result_mdeberta_v3_missing_space_handling = run_test(
+        med_spellchecker_mdeberta_v3_missing_space_handling_test,
+        med_spellchecker_mdeberta_v3_missing_space_handling_test)
     print()
-    print("MedSpellChecker with RoBERTa space handling")
-    print(test_result_roberta_missing_space_handling)
+    print("MedSpellChecker with MedMDebertaV3 space handling")
+    print(test_result_mdeberta_v3_missing_space_handling)
 
-    test_result_distilbert_missing_space_handling = run_test(med_spellchecker_distilbert_missing_space_handling_test,
-                                                             med_spellchecker_distilbert_missing_space_handling_test)
-    print()
-    print("MedSpellChecker with DistilBERT space handling")
-    print(test_result_distilbert_missing_space_handling)
-
-    test_result_rubert_tiny2_missing_space_handling = run_test(
-        med_spellchecker_rubert_tiny2_missing_space_handling_test,
-        med_spellchecker_rubert_tiny2_missing_space_handling_test)
-    print()
-    print("MedSpellChecker with RuBertTiny2 space handling")
-    print(test_result_rubert_tiny2_missing_space_handling)
-
-    test_result_rubioroberta_missing_space_handling = run_test(
-        med_spellchecker_rubioroberta_missing_space_handling_test,
-        med_spellchecker_rubioroberta_missing_space_handling_test)
-    print()
-    print("MedSpellChecker with RuBioRoBerta space handling")
-    print(test_result_rubioroberta_missing_space_handling)
-
-    test_result_rubiobert_missing_space_handling = run_test(
-        med_spellchecker_rubiobert_missing_space_handling_test,
-        med_spellchecker_rubiobert_missing_space_handling_test)
-    print()
-    print("MedSpellChecker with RuBioBert space handling")
-    print(test_result_rubiobert_missing_space_handling)
+    # test_result_rubioroberta_missing_space_handling = run_test(
+    #     med_spellchecker_rubioroberta_missing_space_handling_test,
+    #     med_spellchecker_rubioroberta_missing_space_handling_test)
+    # print()
+    # print("MedSpellChecker with RuBioRoBerta space handling")
+    # print(test_result_rubioroberta_missing_space_handling)
+    #
+    # test_result_rubiobert_missing_space_handling = run_test(
+    #     med_spellchecker_rubiobert_missing_space_handling_test,
+    #     med_spellchecker_rubiobert_missing_space_handling_test)
+    # print()
+    # print("MedSpellChecker with RuBioBert space handling")
+    # print(test_result_rubiobert_missing_space_handling)
